@@ -1,0 +1,172 @@
+---
+title: PetConnect — Modelo relacional (MySQL)
+---
+erDiagram
+    ong {
+        int id PK
+        varchar nome
+        char cnpj UK
+        varchar email
+        varchar telefone
+        varchar cidade
+        text descricao
+        enum status
+        datetime criado_em
+        datetime atualizado_em
+    }
+    usuario {
+        int id PK
+        varchar nome
+        varchar email UK
+        char senha_hash
+        enum perfil
+        varchar telefone
+        varchar cidade
+        bool ativo
+        int ong_id FK
+        datetime criado_em
+        datetime atualizado_em
+    }
+    token_recuperacao_senha {
+        int id PK
+        int usuario_id FK
+        char token_hash UK
+        datetime expira_em
+        datetime usado_em
+        datetime criado_em
+    }
+    animal {
+        int id PK
+        int ong_id FK
+        varchar nome
+        enum especie
+        varchar raca
+        smallint idade_meses
+        enum sexo
+        enum porte
+        enum energia
+        bool convivencia_criancas
+        bool convivencia_animais
+        bool castrado
+        bool vacinado
+        text descricao
+        enum status
+        datetime criado_em
+        datetime atualizado_em
+        datetime excluido_em
+    }
+    foto_animal {
+        int id PK
+        int animal_id FK
+        varchar url
+        tinyint ordem
+        datetime criado_em
+    }
+    favorito {
+        int usuario_id PK,FK
+        int animal_id PK,FK
+        datetime criado_em
+    }
+    formulario_avaliacao {
+        int usuario_id PK,FK
+        enum tipo_moradia
+        bool tem_quintal
+        bool tela_protecao
+        tinyint pessoas_casa
+        bool tem_criancas
+        bool outros_animais
+        tinyint horas_sozinho
+        enum experiencia
+        enum nivel_atividade
+        text motivacao
+        datetime criado_em
+        datetime atualizado_em
+    }
+    solicitacao {
+        int id PK
+        int animal_id FK
+        int usuario_id FK
+        enum status
+        tinyint score
+        text mensagem
+        text motivo_recusa
+        datetime criado_em
+        datetime atualizado_em
+    }
+    historico_solicitacao {
+        int id PK
+        int solicitacao_id FK
+        enum status
+        text observacao
+        int alterado_por FK
+        datetime criado_em
+    }
+    acompanhamento {
+        int id PK
+        int solicitacao_id FK
+        enum tipo
+        datetime data
+        text observacao
+        int registrado_por FK
+        datetime criado_em
+    }
+    notificacao {
+        int id PK
+        int usuario_id FK
+        varchar texto
+        varchar link
+        bool lida
+        datetime criado_em
+    }
+    analise_compatibilidade {
+        bigint id PK
+        int usuario_id FK
+        int animal_id FK
+        tinyint score
+        json fatores
+        varchar modelo
+        decimal tempo_ms
+        datetime calculado_em
+    }
+    classificacao_imagem {
+        bigint id PK
+        int ong_id FK
+        varchar foto_url
+        enum especie_sugerida
+        decimal especie_confianca
+        varchar raca_sugerida
+        decimal raca_confianca
+        json raca_alternativas
+        enum porte_sugerido
+        decimal porte_confianca
+        bool aceita
+        varchar modelo
+        decimal tempo_ms
+        datetime criado_em
+    }
+    medicao_desempenho {
+        int id PK
+        varchar tarefa
+        int tamanho_entrada
+        decimal sequencial_ms
+        decimal opencl_ms
+        varchar dispositivo
+        datetime medido_em
+    }
+    ong |o--o{ usuario : "ong_id"
+    usuario ||--o{ token_recuperacao_senha : "usuario_id"
+    ong ||--o{ animal : "ong_id"
+    animal ||--o{ foto_animal : "animal_id"
+    usuario ||--o{ favorito : "usuario_id"
+    animal ||--o{ favorito : "animal_id"
+    usuario ||--o| formulario_avaliacao : "usuario_id"
+    animal ||--o{ solicitacao : "animal_id"
+    usuario ||--o{ solicitacao : "usuario_id"
+    solicitacao ||--o{ historico_solicitacao : "solicitacao_id"
+    usuario |o--o{ historico_solicitacao : "alterado_por"
+    solicitacao ||--o{ acompanhamento : "solicitacao_id"
+    usuario |o--o{ acompanhamento : "registrado_por"
+    usuario ||--o{ notificacao : "usuario_id"
+    usuario ||--o{ analise_compatibilidade : "usuario_id"
+    animal ||--o{ analise_compatibilidade : "animal_id"
+    ong ||--o{ classificacao_imagem : "ong_id"

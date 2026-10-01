@@ -1,0 +1,30 @@
+---
+title: PetConnect — MER (modelo conceitual)
+---
+erDiagram
+    ONG ||--o{ USUARIO : "tem membros"
+    ONG ||--o{ ANIMAL : "cadastra"
+    ANIMAL ||--|{ FOTO_ANIMAL : "possui"
+    USUARIO ||--o| FORMULARIO_AVALIACAO : "preenche"
+    USUARIO }o--o{ ANIMAL : "favorita"
+    USUARIO ||--o{ SOLICITACAO : "envia"
+    ANIMAL ||--o{ SOLICITACAO : "recebe"
+    SOLICITACAO ||--|{ HISTORICO_SOLICITACAO : "registra etapas"
+    SOLICITACAO ||--o{ ACOMPANHAMENTO : "gera (pós-adoção)"
+    USUARIO ||--o{ NOTIFICACAO : "recebe"
+    USUARIO ||--o{ ANALISE_COMPATIBILIDADE : "é avaliado em"
+    ANIMAL ||--o{ ANALISE_COMPATIBILIDADE : "é avaliado em"
+    ONG ||--o{ CLASSIFICACAO_IMAGEM : "solicita"
+
+    ONG { string nome string cnpj string cidade string status }
+    USUARIO { string nome string email string perfil boolean ativo }
+    ANIMAL { string nome string especie string raca int idade_meses string porte string energia string status }
+    FOTO_ANIMAL { string url int ordem }
+    FORMULARIO_AVALIACAO { string tipo_moradia boolean tem_criancas int horas_sozinho string experiencia string nivel_atividade }
+    SOLICITACAO { string status int score datetime criado_em }
+    HISTORICO_SOLICITACAO { string status string observacao datetime criado_em }
+    ACOMPANHAMENTO { string tipo datetime data string observacao }
+    NOTIFICACAO { string texto boolean lida }
+    ANALISE_COMPATIBILIDADE { int score json fatores string modelo }
+    CLASSIFICACAO_IMAGEM { string especie_sugerida string raca_sugerida string porte_sugerido }
+    MEDICAO_DESEMPENHO { string tarefa decimal sequencial_ms decimal opencl_ms }

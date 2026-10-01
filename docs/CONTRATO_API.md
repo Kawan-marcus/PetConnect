@@ -7,6 +7,7 @@ Este documento define o que o front espera do backend Python. Qualquer mudança 
 - **Autenticação:** JWT no cabeçalho `Authorization: Bearer <token>`.
 - **Erros:** status HTTP adequado (400, 401, 403, 404, 409...) e corpo `{ "detail": "mensagem legível" }`. O front mostra essa mensagem ao usuário. Um 401 desloga o usuário automaticamente.
 - **Datas:** ISO 8601 (`2026-09-24T21:15:00Z`).
+- **Banco de dados:** a estrutura MySQL está em `database/` (ver `database/README.md`). O banco usa `snake_case` e a API devolve `camelCase`; a tabela de conversão está no README do banco.
 
 ---
 
@@ -85,7 +86,7 @@ Cada transição adiciona um item em `historico` e gera uma notificação para o
 | POST | `/ong/animais` | ong | corpo = Animal sem `id`, `ongId`, `status`, `criadoEm`. 403 se a ONG não estiver aprovada (RN04) |
 | PUT | `/animais/:id` | ong dona / admin | |
 | PATCH | `/animais/:id/status` | ong dona / admin | `{ status }` |
-| DELETE | `/animais/:id` | ong dona / admin | 409 se houver solicitação em andamento |
+| DELETE | `/animais/:id` | ong dona / admin | Exclusão lógica (preenche `animal.excluido_em`). 409 se houver solicitação em andamento |
 | POST | `/uploads/fotos` | ong | multipart, campo `arquivo`. Resposta: `{ url }` |
 | GET | `/favoritos` | adotante | lista de Animal |
 | GET | `/favoritos/ids` | adotante | `[1, 8]` |
