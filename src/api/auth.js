@@ -16,5 +16,9 @@ export const cadastrarOng = (dados) => (USE_MOCK ? mock.cadastrarOng(dados) : ap
 /** POST /auth/recuperar-senha → { mensagem } */
 export const recuperarSenha = (email) => (USE_MOCK ? mock.recuperarSenha(email) : api.post('/auth/recuperar-senha', { email }));
 
+/** POST /auth/redefinir-senha  { token, novaSenha } → { mensagem } */
+export const redefinirSenha = (token, novaSenha) =>
+  USE_MOCK ? mock.redefinirSenha(token, novaSenha) : api.post('/auth/redefinir-senha', { token, novaSenha });
+
 /** PUT /auth/me → usuário atualizado */
 export const atualizarPerfil = (dados) => (USE_MOCK ? mock.atualizarPerfil(dados) : api.put('/auth/me', dados));

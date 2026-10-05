@@ -8,6 +8,7 @@ import ComoFunciona from './pages/publico/ComoFunciona.jsx';
 import Login from './pages/publico/Login.jsx';
 import Cadastro from './pages/publico/Cadastro.jsx';
 import RecuperarSenha from './pages/publico/RecuperarSenha.jsx';
+import RedefinirSenha from './pages/publico/RedefinirSenha.jsx';
 import Animais from './pages/publico/Animais.jsx';
 import AnimalDetalhe from './pages/publico/AnimalDetalhe.jsx';
 import NaoEncontrado from './pages/publico/NaoEncontrado.jsx';
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="login" element={<Login />} />
         <Route path="cadastro" element={<Cadastro />} />
         <Route path="recuperar-senha" element={<RecuperarSenha />} />
+        <Route path="redefinir-senha" element={<RedefinirSenha />} />
         <Route path="animais" element={<Animais />} />
         <Route path="animais/:id" element={<AnimalDetalhe />} />
 

@@ -15,6 +15,8 @@ from app.routes.ia import router as ia_router
 from app.routes.solicitacoes import router as solicitacoes_router
 from app.routes.acompanhamentos import router as acompanhamentos_router
 from app.routes.notificacoes import router as notificacoes_router
+from app.routes.admin import router as admin_router
+from app.routes.recuperacao import router as recuperacao_router
 
 
 app = FastAPI(
@@ -56,6 +58,8 @@ app.include_router(ia_router)
 app.include_router(solicitacoes_router)
 app.include_router(acompanhamentos_router)
 app.include_router(notificacoes_router)
+app.include_router(admin_router)
+app.include_router(recuperacao_router)
 
 
 # =========================================================

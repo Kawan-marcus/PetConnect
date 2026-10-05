@@ -94,6 +94,13 @@ export async function recuperarSenha(email) {
   return { mensagem: `Se ${email} estiver cadastrado, enviaremos um link de redefinição.` };
 }
 
+export async function redefinirSenha(token, novaSenha) {
+  await atraso(400);
+  if (!token) throw erro('Link inválido ou expirado. Solicite um novo.');
+  if (!novaSenha || novaSenha.length < 6) throw erro('A nova senha deve possuir pelo menos 6 caracteres.');
+  return { mensagem: 'Senha redefinida com sucesso. Faça login com a nova senha.' };
+}
+
 export async function atualizarPerfil(dados) {
   await atraso(300);
   const u = usuarioAtual();

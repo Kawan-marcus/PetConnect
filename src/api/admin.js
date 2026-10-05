@@ -14,6 +14,9 @@ export const alterarStatusOng = (id, status) => (USE_MOCK ? mock.alterarStatusOn
 /** GET /admin/animais */
 export const listarTodosAnimais = (filtros) => (USE_MOCK ? mock.listarTodosAnimais(filtros) : api.get('/admin/animais', filtros));
 
+/** DELETE /admin/animais/:id → exclusão lógica feita pelo administrador */
+export const removerAnimalAdmin = (id) => (USE_MOCK ? mock.removerAnimal(id) : api.del(`/admin/animais/${id}`));
+
 /** GET /admin/solicitacoes → histórico completo (RF16) */
 export const todasSolicitacoes = () => (USE_MOCK ? mock.todasSolicitacoes() : api.get('/admin/solicitacoes'));
 
