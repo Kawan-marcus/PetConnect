@@ -1,0 +1,150 @@
+---
+title: PetConnect — Diagrama de classes
+---
+classDiagram
+    direction TB
+
+    class Usuario {
+        +int id
+        +string nome
+        +string email
+        -string senhaHash
+        +PerfilUsuario perfil
+        +string telefone
+        +string cidade
+        +bool ativo
+        +autenticar(senha) Token
+        +atualizarPerfil(dados)
+        +recuperarSenha()
+    }
+    class Adotante {
+        +preencherFormulario(dados) FormularioAvaliacao
+        +favoritar(animal)
+        +solicitarAdocao(animal, mensagem) Solicitacao
+        +cancelarSolicitacao(solicitacao)
+    }
+    class MembroOng {
+        +cadastrarAnimal(dados) Animal
+        +analisar(solicitacao)
+        +aprovar(solicitacao, obs)
+        +recusar(solicitacao, motivo)
+        +concluirAdocao(solicitacao, obs)
+        +registrarAcompanhamento(dados)
+    }
+    class Administrador {
+        +aprovarOng(ong)
+        +suspenderOng(ong)
+        +desativarUsuario(usuario)
+        +obterEstatisticas() Estatisticas
+    }
+    Usuario <|-- Adotante
+    Usuario <|-- MembroOng
+    Usuario <|-- Administrador
+
+    class Ong {
+        +int id
+        +string nome
+        +string cnpj
+        +string cidade
+        +StatusOng status
+        +podePublicar() bool
+    }
+    class Animal {
+        +int id
+        +string nome
+        +Especie especie
+        +string raca
+        +int idadeMeses
+        +Porte porte
+        +Energia energia
+        +bool convivenciaCriancas
+        +bool convivenciaAnimais
+        +bool castrado
+        +bool vacinado
+        +StatusAnimal status
+        +datetime excluidoEm
+        +alterarStatus(status)
+        +excluir()
+        +faixaEtaria() string
+    }
+    class FotoAnimal {
+        +string url
+        +int ordem
+    }
+    class FormularioAvaliacao {
+        +TipoMoradia tipoMoradia
+        +bool temQuintal
+        +bool telaProtecao
+        +int pessoasCasa
+        +bool temCriancas
+        +bool outrosAnimais
+        +int horasSozinho
+        +Experiencia experiencia
+        +NivelAtividade nivelAtividade
+        +string motivacao
+    }
+    class Solicitacao {
+        +int id
+        +StatusSolicitacao status
+        +int score
+        +string mensagem
+        +string motivoRecusa
+        +iniciarAnalise()
+        +aprovar(obs)
+        +recusar(motivo)
+        +concluir(obs)
+        +cancelar()
+        +encerrar()
+    }
+    class HistoricoSolicitacao {
+        +StatusSolicitacao status
+        +string observacao
+        +datetime data
+    }
+    class Acompanhamento {
+        +TipoAcompanhamento tipo
+        +datetime data
+        +string observacao
+    }
+    class Notificacao {
+        +string texto
+        +string link
+        +bool lida
+        +marcarComoLida()
+    }
+    class ServicoCompatibilidade {
+        <<service>>
+        +calcular(formulario, animal) ResultadoCompatibilidade
+        +recomendar(adotante, limite) list
+        +calcularEmLote(formulario, animais) list
+    }
+    class ResultadoCompatibilidade {
+        +int score
+        +list~Fator~ fatores
+        +string modelo
+    }
+    class StatusSolicitacao {
+        <<enumeration>>
+        pendente
+        em_analise
+        aprovada
+        recusada
+        concluida
+        encerrada
+        cancelada
+    }
+
+    Ong "1" -- "1..*" MembroOng : possui
+    Ong "1" -- "0..*" Animal : cadastra
+    Animal "1" *-- "1..6" FotoAnimal : fotos
+    Adotante "1" -- "0..1" FormularioAvaliacao : preenche
+    Adotante "0..*" -- "0..*" Animal : favorita
+    Adotante "1" -- "0..*" Solicitacao : envia
+    Animal "1" -- "0..*" Solicitacao : recebe
+    Solicitacao "1" *-- "1..*" HistoricoSolicitacao : linha do tempo
+    Solicitacao "1" -- "0..*" Acompanhamento : pós-adoção
+    Usuario "1" -- "0..*" Notificacao : recebe
+    Solicitacao ..> StatusSolicitacao
+    ServicoCompatibilidade ..> FormularioAvaliacao : usa
+    ServicoCompatibilidade ..> Animal : usa
+    ServicoCompatibilidade ..> ResultadoCompatibilidade : gera
