@@ -166,7 +166,7 @@ export default function Layout() {
       <header className="topo">
         <div className="container topo__conteudo">
           <Link to="/" className="logo">
-            <Patinha /> <span>AdotaPet</span>
+            <Patinha /> <span>PetConnect</span>
           </Link>
 
           <nav className={`nav ${menuMobile ? 'is-aberto' : ''}`} aria-label="Principal">
@@ -205,7 +205,7 @@ export default function Layout() {
       <footer className="rodape">
         <div className="container rodape__conteudo">
           <div className="logo logo--pequeno">
-            <Patinha tamanho={22} /> <span>AdotaPet</span>
+            <Patinha tamanho={22} /> <span>PetConnect</span>
           </div>
           <p className="texto-suave">Projeto acadêmico · Fábrica de Software & Tópicos Avançados · 2026.2</p>
         </div>
