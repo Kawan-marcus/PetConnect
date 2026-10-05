@@ -47,7 +47,7 @@ export default function Login() {
         <div className="auth__marca">
           <Patinha tamanho={40} />
           <h1>Entrar</h1>
-          <p className="texto-suave">Bem-vindo de volta ao AdotaPet.</p>
+          <p className="texto-suave">Bem-vindo de volta ao PetConnect.</p>
         </div>
 
         <Erro erro={erro} />

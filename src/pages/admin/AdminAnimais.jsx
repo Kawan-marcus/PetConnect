@@ -5,8 +5,7 @@ import Carregando, { Erro, Vazio } from '../../components/Carregando.jsx';
 import { StatusBadge } from '../../components/Badge.jsx';
 import Icone from '../../components/Icone.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
-import { listarTodosAnimais } from '../../api/admin.js';
-import { removerAnimal } from '../../api/animais.js';
+import { listarTodosAnimais, removerAnimalAdmin } from '../../api/admin.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { STATUS_ANIMAL, ESPECIES, formatarData } from '../../utils/format.js';
 
@@ -20,7 +19,7 @@ export default function AdminAnimais() {
   const remover = async (a) => {
     if (!window.confirm(`Remover ${a.nome} (${a.ong.nome})?`)) return;
     try {
-      await removerAnimal(a.id);
+      await removerAnimalAdmin(a.id);
       toast(`${a.nome} removido.`);
       recarregar();
     } catch (e) {

@@ -1,0 +1,42 @@
+---
+title: PetConnect — Arquitetura do sistema
+---
+flowchart LR
+    subgraph CLIENTE["Navegador do usuário"]
+        direction TB
+        UI["Front-end React 19 (Vite)<br/>telas por perfil: adotante · ONG · admin"]
+        CTX["AuthContext + RotaProtegida<br/>(token JWT, controle de perfil)"]
+        APIJS["Camada src/api (Axios)<br/>modo real ou simulado (VITE_USE_MOCK)"]
+        UI --> CTX --> APIJS
+    end
+
+    subgraph SERVIDOR["Backend Python — FastAPI (porta 8000)"]
+        direction TB
+        ROTAS["Rotas /api<br/>auth · animais · ong · solicitações · favoritos<br/>formulário · acompanhamentos · notificações · admin"]
+        SEG["security.py<br/>bcrypt + JWT"]
+        RN["Regras de negócio<br/>RN01–RN05 · histórico · notificações"]
+        IA["Componente avançado (ia.py)<br/>compatibilidade e recomendações"]
+        OCL["Processamento paralelo<br/>PyOpenCL (GPU) — cálculo em lote"]
+        UPL["uploads/ (fotos)"]
+        ROTAS --> SEG
+        ROTAS --> RN
+        ROTAS --> IA
+        IA -.-> OCL
+        ROTAS --> UPL
+    end
+
+    subgraph DADOS["MySQL 8 — banco petconnect"]
+        direction TB
+        TAB["14 tabelas<br/>usuário · ONG · animal · solicitação · histórico …"]
+        VIEW["views do dashboard"]
+        IATAB["tabelas da IA<br/>analise_compatibilidade · medicao_desempenho"]
+    end
+
+    APIJS -- "HTTP/JSON + Bearer JWT<br/>(proxy do Vite: /api → :8000)" --> ROTAS
+    RN -- "SQLAlchemy + PyMySQL" --> TAB
+    ROTAS --> VIEW
+    IA --> IATAB
+    OCL -.-> IATAB
+
+    classDef planejado stroke-dasharray: 5 5
+    class OCL planejado
