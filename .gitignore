@@ -6,3 +6,12 @@ dist
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# Python / backend
+__pycache__/
+*.pyc
+venv/
+.venv/
+backend/.env
+backend/uploads/*
+!backend/uploads/.gitkeep

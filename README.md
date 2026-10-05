@@ -1,123 +1,58 @@
-# AdotaPet: Front-end
+# PetConnect: Plataforma de Adoção de Animais
 
-Interface web da **Plataforma de Adoção de Animais** (Fábrica de Software + Tópicos Avançados, 2026.2).
+Sistema que conecta animais resgatados por ONGs a adotantes compatíveis. Projeto integrado das disciplinas **Fábrica de Software** e **Tópicos Avançados** (2026.2).
 
-- **Tecnologia:** React 19 + Vite, React Router e Axios
-- **Papel no sistema:** apenas interface. Regras de negócio, banco (MySQL) e IA/OpenCL ficam no backend Python.
-- **Funciona sem o backend:** o modo *mock* simula a API no navegador, então dá para desenvolver e demonstrar desde a Sprint 1.
+- O adotante preenche um formulário de avaliação, e o sistema calcula a **compatibilidade** com cada animal.
+- A ONG recebe as solicitações já com esse índice e decide.
+- O administrador aprova ONGs e acompanha os indicadores.
 
----
+> **Equipe:** Grupo **[Nº]**: [Nome 1] · [Nome 2] · [Nome 3] · [Nome 4] · [Nome 5]
 
-## Como rodar
+## Arquitetura
 
-Pré-requisito: Node.js 20 ou mais recente.
+![Arquitetura](docs/diagramas/arquitetura.png)
 
-```bash
-npm install
-cp .env.example .env      # no Windows: copy .env.example .env
-npm run dev
+| Camada | Tecnologia | Pasta |
+|---|---|---|
+| Interface | React 19 + Vite + React Router + Axios | `src/`, `public/` |
+| API / regras de negócio | Python + FastAPI + SQLAlchemy + JWT | `backend/` |
+| Banco de dados | MySQL 8 | `database/` |
+| Componente avançado | Modelo de compatibilidade + processamento em lote com OpenCL | `backend/app/routes/ia.py` *(em evolução)* |
+
+## Estrutura do repositório
+```
+backend/      API em FastAPI (ver backend/README.md)
+database/     scripts SQL, dados de exemplo e diagramas MER/relacional (ver database/README.md)
+docs/         contrato da API, diagramas, documentação das Sprints e do front
+public/       arquivos estáticos do front (inclui fotos de exemplo dos animais)
+src/          código do front-end React
 ```
 
-Abra http://localhost:5173.
+## Como executar localmente
 
-### Contas de demonstração (modo mock)
+São três partes, nesta ordem. Na primeira vez, siga os READMEs de cada uma.
 
-| Perfil   | E-mail               | Senha  |
-|----------|----------------------|--------|
-| Adotante | ana@email.com        | 123456 |
-| ONG      | ong@patinhas.org     | 123456 |
-| Admin    | admin@adotapet.com   | 123456 |
+1. **Banco:** rode `database/01_schema.sql`, `02_views.sql` e `03_seed.sql` no MySQL Workbench. Detalhes em [database/README.md](database/README.md).
+2. **Backend:** na pasta `backend`, configure o `.env` e rode `uvicorn app.main:app --reload --port 8000`. Detalhes em [backend/README.md](backend/README.md).
+3. **Front-end:** na raiz do projeto:
+   ```bash
+   npm install
+   copy .env.example .env      # e deixe VITE_USE_MOCK=false para usar o backend
+   npm run dev
+   ```
+   Abra http://localhost:5173. Detalhes em [docs/FRONTEND.md](docs/FRONTEND.md).
 
-Na tela de login há botões para preencher essas contas automaticamente. A faixa escura no topo tem o botão **"Restaurar dados de exemplo"**, que apaga tudo o que foi alterado e volta ao estado inicial.
+> Com `VITE_USE_MOCK=true`, o front funciona sozinho, com dados simulados no navegador (útil para desenvolver as telas sem o backend).
 
----
-
-## Ligando no backend Python
-
-1. No `.env`, troque `VITE_USE_MOCK=true` para `VITE_USE_MOCK=false`.
-2. Suba o backend na porta **8000**. O `vite.config.js` já redireciona `/api` para `http://localhost:8000`, sem problema de CORS em desenvolvimento.
-3. O backend precisa seguir o contrato descrito em **[docs/CONTRATO_API.md](docs/CONTRATO_API.md)**: endpoints, formato do JSON, estados da solicitação e respostas da IA.
-
-Cada função em `src/api/*.js` tem as duas versões lado a lado: a real (Axios) e a simulada (`src/api/mock/handlers.js`). Assim fica fácil ver o que o backend precisa devolver.
-
----
-
-## Estrutura
-
-```
-src/
-  api/
-    client.js          # Axios: baseURL, token JWT, tratamento de erros
-    auth.js            # login, cadastro, perfil
-    animais.js         # animais, fotos, favoritos
-    adocoes.js         # formulário, solicitações, acompanhamento
-    ia.js              # compatibilidade, recomendações, classificação de imagem, desempenho
-    admin.js           # usuários, ONGs, estatísticas
-    notificacoes.js
-    mock/              # API simulada (localStorage) + regras de negócio de exemplo
-  components/          # Layout, AnimalCard, ScoreCompatibilidade, TimelineStatus, Modal...
-  context/             # AuthContext (usuário logado), Favoritos, Toast
-  hooks/               # useAsync (chamadas à API), useFormulario (validação)
-  routes/              # RotaProtegida (bloqueia rota por perfil)
-  pages/
-    publico/           # Home, Login, Cadastro, Animais, Detalhe, Perfil...
-    adotante/          # Favoritos, Formulário, Minhas solicitações, Recomendados
-    ong/               # Painel, Animais, Cadastro de animal, Solicitações, Pós-adoção
-    admin/             # Dashboard, ONGs, Usuários, Animais, Histórico
-  styles/global.css    # tokens de cor e todo o CSS
-```
-
----
-
-## Telas × requisitos
-
-| Requisito | Tela / rota |
+### Contas de teste (senha `123456`)
+| Perfil | E-mail |
 |---|---|
-| RF01 Cadastro de usuários | `/cadastro` |
-| RF02 Login | `/login` (+ `/recuperar-senha`) |
-| RF03 Cadastro de ONGs | `/cadastro?tipo=ong` (entra como "pendente") |
-| RF04–RF06 Cadastro de animais, fotos e informações | `/ong/animais/novo` e `/ong/animais/:id/editar` |
-| RF07 Visualização | `/animais` e `/animais/:id` |
-| RF08 Busca e filtros | `/animais` (filtros ficam na URL) |
-| RF09 Favoritos | coração nos cards + `/favoritos` |
-| RF10 Solicitação de adoção | botão "Solicitar adoção" em `/animais/:id` |
-| RF11 Formulário de avaliação | `/formulario` |
-| RF12 Análise pela ONG | `/ong/solicitacoes` e `/ong/solicitacoes/:id` |
-| RF13 Aprovação/recusa | ações em `/ong/solicitacoes/:id` |
-| RF14 Acompanhamento pelo adotante | `/minhas-solicitacoes` (linha do tempo) |
-| RF15 Status do animal | seletor em `/ong/animais` + automático ao aprovar/concluir |
-| RF16 Histórico | `/minhas-solicitacoes`, `/ong/solicitacoes` (aba Todas), `/admin/historico` |
-| RF17–RF19 Gestão (admin) | `/admin/usuarios`, `/admin/ongs`, `/admin/animais` |
-| RF20–RF21 Compatibilidade (IA) | score com fatores no detalhe do animal e na análise da ONG |
-| RF22 Recomendação | `/recomendados` |
-| RF23 Classificação por imagem | cartão "A IA sugere a partir da foto" no cadastro de animal |
-| Acompanhamento pós-adoção | `/ong/acompanhamentos` |
-| Notificações | sino no topo |
-| Relatórios + comparativo OpenCL | `/admin` |
+| Adotante | ana@email.com |
+| ONG | ong@patinhas.org |
+| Administrador | admin@adotapet.com |
 
-### Regras de negócio refletidas no front
-
-- **RN01:** animal adotado não recebe solicitações.
-- **RN02:** ao aprovar, o animal vai para "em processo" e as outras solicitações para ele são encerradas. A tela avisa antes.
-- **RN03:** só solicita quem preencheu o formulário. O botão fica desabilitado até isso acontecer.
-- **RN04:** ONG só publica animais depois de aprovada pelo admin.
-- **RN05:** uma solicitação ativa por animal por usuário.
-
-> O front valida para dar uma boa experiência, mas **quem garante as regras é o backend**. Ele precisa validar tudo de novo.
-
----
-
-## Sobre a IA no front
-
-O front **não calcula nada de IA** e só exibe o que o backend devolve. O arquivo `src/api/mock/compatibilidade.js` é uma **simulação** com pesos fixos, feita para as telas funcionarem antes do modelo ficar pronto. Ela também serve de referência para o formato da resposta (score + fatores). Os números do comparativo CPU × OpenCL no dashboard também são de exemplo e devem ser trocados pelas medições reais do backend.
-
----
-
-## Build para produção
-
-```bash
-npm run build     # gera a pasta dist/
-npm run preview   # testa o build localmente
-```
-
-Se o servidor onde o site for publicado não redirecionar todas as rotas para o `index.html`, use `VITE_HASH_ROUTER=true` no `.env`. As URLs passam a ficar no formato `/#/animais`.
+## Documentação
+- [Documentação das Sprints](docs/sprints/) (arquitetura, diagramas, testes, evidências)
+- [Contrato da API](docs/CONTRATO_API.md): todas as rotas e o formato do JSON
+- [Banco de dados](database/README.md): tabelas, regras e decisões de modelagem
+- Diagramas: [arquitetura](docs/diagramas/arquitetura.png) · [classes](docs/diagramas/diagrama_classes.png) · [MER](database/diagramas/mer_conceitual.png) · [relacional](database/diagramas/modelo_relacional.png)
