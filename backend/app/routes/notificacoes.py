@@ -45,7 +45,9 @@ def listar_notificacoes(
             "texto": notificacao["texto"],
             "link": notificacao["link"],
             "lida": bool(notificacao["lida"]),
-            "criadoEm": notificacao["criado_em"].isoformat()
+            "criadoEm": notificacao["criado_em"].isoformat(),
+            # o front (sino de notificações) lê o campo "data", conforme docs/CONTRATO_API.md
+            "data": notificacao["criado_em"].isoformat()
         }
         for notificacao in notificacoes
     ]

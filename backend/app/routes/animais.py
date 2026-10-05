@@ -822,6 +822,24 @@ def remover_animal(
                 detail="Você não pode remover um animal de outra ONG."
             )
 
+        # Não remove animal com solicitação em andamento
+        # (evita deixar pedidos de adoção abertos para um animal que sumiu)
+        em_andamento = conexao.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM solicitacao
+                WHERE animal_id = :animal_id
+                  AND status IN ('pendente', 'em_analise', 'aprovada')
+            """),
+            {"animal_id": animal_id}
+        ).scalar()
+
+        if em_andamento:
+            raise HTTPException(
+                status_code=409,
+                detail="Não é possível remover um animal com solicitações em andamento."
+            )
+
         # Exclusão lógica:
         # não apagamos definitivamente do banco.
         conexao.execute(

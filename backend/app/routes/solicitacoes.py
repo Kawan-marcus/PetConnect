@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from pydantic import BaseModel
 
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
 
 from app.database import engine
 
@@ -154,6 +154,51 @@ def criar_notificacao(conexao, usuario_id: int, texto_notificacao: str, link: st
 # Criar uma nova solicitação de adoção
 
 # ============================================================
+
+# ============================================================
+# HISTÓRICO DA SOLICITAÇÃO (linha do tempo — RF14 / RF16)
+# Cada mudança de status fica registrada em historico_solicitacao.
+# ============================================================
+
+def registrar_historico(conexao, solicitacao_id: int, status: str, observacao: str = "", alterado_por: int | None = None):
+    conexao.execute(
+        text("""
+            INSERT INTO historico_solicitacao (solicitacao_id, status, observacao, alterado_por)
+            VALUES (:solicitacao_id, :status, :observacao, :alterado_por)
+        """),
+        {
+            "solicitacao_id": solicitacao_id,
+            "status": status,
+            "observacao": (observacao or "").strip() or None,
+            "alterado_por": alterado_por
+        }
+    )
+
+
+def buscar_historicos(conexao, ids: list[int]) -> dict[int, list[dict]]:
+    """Devolve {solicitacao_id: [{status, data, obs}, ...]} em ordem cronológica."""
+    if not ids:
+        return {}
+
+    linhas = conexao.execute(
+        text("""
+            SELECT solicitacao_id, status, observacao, criado_em
+            FROM historico_solicitacao
+            WHERE solicitacao_id IN :ids
+            ORDER BY criado_em ASC, id ASC
+        """).bindparams(bindparam("ids", expanding=True)),
+        {"ids": list(ids)}
+    ).mappings().all()
+
+    historicos: dict[int, list[dict]] = {}
+    for h in linhas:
+        historicos.setdefault(h["solicitacao_id"], []).append({
+            "status": h["status"],
+            "data": h["criado_em"].isoformat() if h["criado_em"] else None,
+            "obs": h["observacao"] or ""
+        })
+    return historicos
+
 
 @router.post("")
 
@@ -449,6 +494,8 @@ def solicitar_adocao(
 
         solicitacao_id = resultado.lastrowid
 
+        registrar_historico(conexao, solicitacao_id, "pendente", "", usuario_id)
+
         # ----------------------------------------------------
         # Notifica os usuários da ONG sobre a nova solicitação
         # ----------------------------------------------------
@@ -603,6 +650,9 @@ def minhas_solicitacoes(
 
         ).mappings().all()
 
+        historicos = buscar_historicos(conexao, [s["id"] for s in solicitacoes])
+
+
         resposta = []
 
         for s in solicitacoes:
@@ -677,19 +727,7 @@ def minhas_solicitacoes(
 
                 },
 
-                "historico": [
-
-                    {
-
-                        "status": s["status"],
-
-                        "data": s["criado_em"].isoformat(),
-
-                        "obs": ""
-
-                    }
-
-                ]
+                "historico": historicos.get(s["id"]) or [{"status": s["status"], "data": s["criado_em"].isoformat(), "obs": ""}]
 
             })
 
@@ -770,6 +808,8 @@ def cancelar_solicitacao(
                 )
 
             )
+
+        registrar_historico(conexao, solicitacao_id, "cancelada", "Cancelada pelo adotante.", usuario_id)
 
         conexao.execute(
 
@@ -873,6 +913,8 @@ def analisar_solicitacao(
                 detail="Somente uma solicitação pendente pode ser colocada em análise."
             )
 
+        registrar_historico(conexao, solicitacao_id, "em_analise", "", usuario_id)
+
         conexao.execute(
             text("""
                 UPDATE solicitacao
@@ -953,6 +995,8 @@ def recusar_solicitacao(
                 status_code=409,
                 detail="Somente solicitações pendentes ou em análise podem ser recusadas."
             )
+
+        registrar_historico(conexao, solicitacao_id, "recusada", motivo, usuario_id)
 
         conexao.execute(
             text("""
@@ -1165,6 +1209,8 @@ def aprovar_solicitacao(
 
         # ----------------------------------------------------
 
+        registrar_historico(conexao, solicitacao_id, "aprovada", dados.obs, usuario_id)
+
         conexao.execute(
 
             text("""
@@ -1241,6 +1287,22 @@ def aprovar_solicitacao(
                 "solicitacao_id": solicitacao_id
             }
         ).mappings().all()
+
+        # RN02: registra o encerramento automático das outras solicitações deste animal
+        conexao.execute(
+            text("""
+                INSERT INTO historico_solicitacao (solicitacao_id, status, observacao)
+                SELECT id, 'encerrada', 'Outra solicitação foi aprovada para este animal.'
+                FROM solicitacao
+                WHERE animal_id = :animal_id
+                  AND id <> :solicitacao_id
+                  AND status IN ('pendente', 'em_analise')
+            """),
+            {
+                "animal_id": solicitacao["animal_id"],
+                "solicitacao_id": solicitacao_id
+            }
+        )
 
         conexao.execute(
 
@@ -1520,6 +1582,8 @@ def concluir_adocao(
         # Marca a solicitação como concluída
 
         # ----------------------------------------------------
+
+        registrar_historico(conexao, solicitacao_id, "concluida", dados.obs or "Adoção concluída.", usuario_id)
 
         conexao.execute(
 
@@ -1902,6 +1966,8 @@ def obter_solicitacao(
 
         ).mappings().first()
 
+        historico_json = buscar_historicos(conexao, [solicitacao["id"]]).get(solicitacao["id"])
+
         formulario_json = None
 
         if formulario:
@@ -1929,6 +1995,21 @@ def obter_solicitacao(
                 "motivacao": formulario["motivacao"]
 
             }
+
+
+        # RF21: compatibilidade com os fatores, para apoiar a análise da ONG
+        compatibilidade_json = None
+
+        if formulario:
+            from app.routes.ia import calcular_compatibilidade
+
+            animal_completo = conexao.execute(
+                text("SELECT * FROM animal WHERE id = :animal_id"),
+                {"animal_id": solicitacao["animal_id"]}
+            ).mappings().first()
+
+            if animal_completo:
+                compatibilidade_json = calcular_compatibilidade(formulario, animal_completo)
 
     return {
 
@@ -2006,26 +2087,8 @@ def obter_solicitacao(
 
         "formulario": formulario_json,
 
-        "historico": [
+        "compatibilidade": compatibilidade_json,
 
-            {
-
-                "status": solicitacao["status"],
-
-                "data": (
-
-                    solicitacao["criado_em"].isoformat()
-
-                    if solicitacao["criado_em"]
-
-                    else None
-
-                ),
-
-                "obs": ""
-
-            }
-
-        ]
+        "historico": historico_json or [{"status": solicitacao["status"], "data": solicitacao["criado_em"].isoformat() if solicitacao["criado_em"] else None, "obs": ""}]
 
     }
