@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icone, { Patinha } from './Icone.jsx';
 import ErroFatal from './ErroFatal.jsx';
+import Trilha, { TrilhaProvider, podeVoltarNoHistorico } from './Trilha.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { listarNotificacoes, marcarNotificacoesLidas } from '../api/notificacoes.js';
 import { USE_MOCK } from '../api/client.js';
@@ -14,6 +15,7 @@ const LINKS = {
     { to: '/como-funciona', rotulo: 'Como funciona' },
   ],
   adotante: [
+    { to: '/minha-area', rotulo: 'Minha área' },
     { to: '/animais', rotulo: 'Adotar' },
     { to: '/recomendados', rotulo: 'Recomendados' },
     { to: '/favoritos', rotulo: 'Favoritos' },
@@ -146,7 +148,11 @@ export default function Layout() {
   };
 
   return (
+    <TrilhaProvider>
     <div className="app">
+      <a href="#conteudo" className="pular-conteudo" onClick={(e) => { e.preventDefault(); document.getElementById('conteudo')?.focus(); }}>
+        Pular para o conteúdo
+      </a>
       {USE_MOCK && (
         <div className="faixa-mock">
           Modo demonstração: dados simulados no navegador.
@@ -175,6 +181,15 @@ export default function Layout() {
                 {l.rotulo}
               </NavLink>
             ))}
+            {usuario && (
+              <div className="nav__extra" aria-label="Sua conta">
+                <NavLink to="/perfil" className="nav__link"><Icone nome="usuario" tamanho={18} /> Meu perfil</NavLink>
+                {usuario.perfil === 'adotante' && (
+                  <NavLink to="/formulario" className="nav__link"><Icone nome="formulario" tamanho={18} /> Formulário de avaliação</NavLink>
+                )}
+                <button type="button" className="nav__link" onClick={sair}><Icone nome="sair" tamanho={18} /> Sair</button>
+              </div>
+            )}
           </nav>
 
           <div className="topo__acoes">
@@ -196,7 +211,8 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="principal">
+      <main className="principal" id="conteudo" tabIndex={-1}>
+        <Trilha />
         <ErroFatal chave={location.pathname}>
           <Outlet />
         </ErroFatal>
@@ -211,17 +227,26 @@ export default function Layout() {
         </div>
       </footer>
     </div>
+    </TrilhaProvider>
   );
 }
 
-/** Cabeçalho padrão das páginas internas. */
+/**
+ * Cabeçalho padrão das páginas internas.
+ * voltar = caminho de reserva. Se o usuário veio de outra tela do app, "Voltar" usa o histórico;
+ * se abriu o link direto (sem histórico), vai para o caminho de reserva em vez de sair do site.
+ */
 export function CabecalhoPagina({ titulo, subtitulo, acoes, voltar }) {
   const navigate = useNavigate();
+  const irVoltar = () => {
+    if (podeVoltarNoHistorico()) navigate(-1);
+    else navigate(voltar === true ? '/' : voltar);
+  };
   return (
     <div className="cabecalho-pagina">
       <div>
         {voltar && (
-          <button className="btn btn--link voltar" onClick={() => navigate(voltar === true ? -1 : voltar)}>
+          <button className="btn btn--link voltar" onClick={irVoltar}>
             <Icone nome="voltar" tamanho={16} /> Voltar
           </button>
         )}

@@ -19,6 +19,8 @@ import Favoritos from './pages/adotante/Favoritos.jsx';
 import FormularioAvaliacao from './pages/adotante/FormularioAvaliacao.jsx';
 import MinhasSolicitacoes from './pages/adotante/MinhasSolicitacoes.jsx';
 import Recomendados from './pages/adotante/Recomendados.jsx';
+import MinhaArea from './pages/adotante/MinhaArea.jsx';
+import Comparar from './pages/adotante/Comparar.jsx';
 
 // ONG
 import OngPainel from './pages/ong/OngPainel.jsx';
@@ -56,6 +58,8 @@ export default function App() {
 
         {/* Adotante */}
         <Route element={<RotaProtegida perfis={['adotante']} />}>
+          <Route path="minha-area" element={<MinhaArea />} />
+          <Route path="comparar" element={<Comparar />} />
           <Route path="favoritos" element={<Favoritos />} />
           <Route path="formulario" element={<FormularioAvaliacao />} />
           <Route path="minhas-solicitacoes" element={<MinhasSolicitacoes />} />

@@ -547,3 +547,108 @@ textarea { resize: vertical; min-height: 90px; }
 .card-animal__status .badge { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .anel-score--pequeno .anel-score__texto strong { font-size: 1.2rem; }
 .anel-score--pequeno .anel-score__texto span { display: none; }
+
+/* ==========================================================================
+   Sprint 06 — navegação, estados de página e módulo 3 (IA)
+   ========================================================================== */
+
+/* Acessibilidade: texto só para leitores de tela + atalho "pular para o conteúdo" */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.pular-conteudo { position: absolute; left: 16px; top: -60px; z-index: 100; background: var(--texto); color: #fff; padding: 10px 16px; border-radius: var(--raio-pequeno); font-weight: 700; text-decoration: none; transition: top 0.15s; }
+.pular-conteudo:focus { top: 12px; }
+.principal:focus { outline: none; }
+
+/* Trilha de navegação (breadcrumb) */
+.trilha { padding-top: 18px; font-size: 0.88rem; }
+.trilha ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.trilha li { display: inline-flex; align-items: center; gap: 4px; color: var(--texto-suave); min-width: 0; }
+.trilha li + li::before { content: '›'; color: var(--borda); font-weight: 800; margin: 0 2px; color: #b9ada2; }
+.trilha a { color: var(--texto-suave); text-decoration: none; font-weight: 700; padding: 2px 4px; border-radius: 6px; }
+.trilha a:hover { color: var(--cor-primaria-escura); background: var(--cor-primaria-clara); }
+.trilha [aria-current='page'] { color: var(--texto); font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
+.trilha + .pagina { padding-top: 12px; }
+
+/* Páginas de estado (404, acesso restrito) */
+.estado-pagina { text-align: center; padding: 40px 24px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); box-shadow: var(--sombra); }
+.estado-pagina h1 { font-size: clamp(1.4rem, 3vw, 1.8rem); }
+.estado-pagina__icone { display: flex; width: 72px; height: 72px; align-items: center; justify-content: center; border-radius: 50%; background: var(--cor-primaria-clara); color: var(--cor-primaria-escura); margin: 0 auto 14px; }
+.estado-pagina .eyebrow { display: block; }
+.estado-pagina__icone--aviso { background: var(--amarelo-claro); color: var(--amarelo); }
+.estado-pagina__acoes { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.estado-pagina__dica { margin: 22px 0 8px; font-size: 0.9rem; }
+.eyebrow--neutro { color: var(--texto-suave); }
+.pilulas--centro { justify-content: center; }
+.pilulas--centro .pilula { text-decoration: none; }
+
+/* Menu do celular: atalhos da conta dentro do menu */
+.nav__extra { display: none; }
+
+/* Minha área: jornada de adoção */
+.jornada__etapas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; counter-reset: etapa; }
+.jornada__etapa { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; font-size: 0.88rem; color: var(--texto-suave); font-weight: 700; }
+.jornada__etapa:not(:last-child)::after { content: ''; position: absolute; top: 17px; left: calc(50% + 22px); right: calc(-50% + 22px); height: 3px; border-radius: 3px; background: var(--borda); }
+.jornada__etapa.is-feita:not(:last-child)::after { background: var(--verde); }
+.jornada__marca { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--superficie-2); border: 2px solid var(--borda); font-weight: 800; color: var(--texto-suave); position: relative; z-index: 1; }
+.jornada__etapa.is-feita { color: var(--texto); }
+.jornada__etapa.is-feita .jornada__marca { background: var(--verde); border-color: var(--verde); color: #fff; }
+.jornada__etapa.is-atual .jornada__marca { border-color: var(--cor-ia); color: var(--cor-ia); background: var(--cor-ia-clara); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cor-ia) 18%, transparent); }
+.jornada__etapa.is-atual { color: var(--cor-ia); }
+.alerta--com-acao { align-items: center; }
+.alerta--com-acao .btn { margin-left: auto; flex-shrink: 0; }
+
+/* Recomendados: filtros rápidos e motivo da recomendação */
+.filtros-rapidos { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 20px; }
+.filtros-rapidos select, .barra-ferramentas select { width: auto; padding: 8px 12px; border: 1.5px solid var(--borda); border-radius: 999px; background: var(--superficie); font-weight: 700; font-size: 0.9rem; }
+.filtros-rapidos__total { margin-left: auto; font-size: 0.88rem; }
+.motivo-ia { margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--borda); display: flex; flex-direction: column; gap: 3px; }
+.card-animal__info .motivo-ia p { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; font-weight: 600; line-height: 1.3; }
+.motivo-ia__bom { color: var(--verde); }
+.motivo-ia__atencao { color: var(--amarelo); }
+
+/* Comparador de compatibilidade */
+.seletor-comparacao__lista { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; scroll-snap-type: x proximity; }
+.opcao-animal { position: relative; flex: 0 0 116px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; border: 2px solid var(--borda); border-radius: var(--raio); background: var(--superficie); cursor: pointer; scroll-snap-align: start; transition: border-color 0.15s, transform 0.15s; }
+.opcao-animal:hover:not(:disabled) { border-color: var(--texto-suave); transform: translateY(-1px); }
+.opcao-animal:disabled { opacity: 0.45; cursor: not-allowed; }
+.opcao-animal img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--superficie-2); }
+.opcao-animal__nome { font-weight: 800; font-size: 0.92rem; }
+.opcao-animal__info { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--texto-suave); font-weight: 700; }
+.opcao-animal__info .icone { color: var(--cor-primaria); }
+.opcao-animal.is-ativa { border-color: var(--cor-ia); background: var(--cor-ia-clara); }
+.opcao-animal__check { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: var(--cor-ia); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+.resumo-comparacao { margin-top: 4px; }
+
+.tabela-comparacao { table-layout: fixed; min-width: 640px; }
+.tabela-comparacao th[scope='col']:first-child { width: 200px; }
+.tabela-comparacao thead th { text-transform: none; letter-spacing: 0; white-space: normal; vertical-align: top; background: var(--superficie); padding: 18px 12px; }
+.tabela-comparacao thead th.is-vencedor { background: var(--cor-ia-clara); }
+.tabela-comparacao tbody th[scope='row'] { text-transform: none; letter-spacing: 0; font-size: 0.9rem; color: var(--texto); font-weight: 700; white-space: normal; background: var(--fundo); }
+.tabela-comparacao tbody th[scope='row'] .texto-suave { font-size: 0.78rem; font-weight: 600; }
+.tabela-comparacao td { vertical-align: top; }
+.tabela-comparacao td.is-melhor { background: color-mix(in srgb, var(--verde-claro) 70%, transparent); }
+.tabela-comparacao__grupo th { background: var(--superficie-2) !important; color: var(--texto-suave) !important; font-size: 0.75rem !important; text-transform: uppercase !important; letter-spacing: 0.06em !important; padding: 8px 16px !important; }
+.tabela-comparacao tbody tr:hover { background: transparent; }
+.comparacao-animal { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.comparacao-animal__foto { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; background: var(--superficie-2); margin-bottom: 4px; }
+.comparacao-animal__nome { font-size: 1.05rem; font-weight: 800; color: var(--texto); text-decoration: none; }
+.comparacao-animal__nome:hover { color: var(--cor-primaria-escura); text-decoration: underline; }
+.comparacao-animal__nivel { font-size: 0.82rem; font-weight: 800; }
+.celula-fator { display: flex; align-items: center; gap: 8px; }
+.celula-fator .barra { flex: 1; }
+.celula-fator strong { font-size: 0.85rem; min-width: 38px; text-align: right; }
+.celula-fator__desc { display: block; margin-top: 4px; font-size: 0.78rem; color: var(--texto-suave); line-height: 1.35; }
+
+@media (max-width: 1000px) {
+  .nav__extra { display: flex; flex-direction: column; border-top: 1px solid var(--borda); margin-top: 8px; padding-top: 8px; }
+  .nav__extra .nav__link { display: flex; align-items: center; gap: 10px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; font-weight: 700; color: var(--texto-suave); }
+}
+
+@media (max-width: 800px) {
+  .jornada__etapas { grid-template-columns: 1fr; gap: 10px; }
+  .jornada__etapa { flex-direction: row; text-align: left; }
+  .jornada__etapa:not(:last-child)::after { display: none; }
+  .filtros-rapidos__total { margin-left: 0; width: 100%; }
+  .alerta--com-acao { flex-wrap: wrap; }
+  .alerta--com-acao .btn { margin-left: 0; width: 100%; justify-content: center; }
+  .jornada .secao__topo .btn { width: 100%; white-space: normal; justify-content: center; text-align: center; }
+}

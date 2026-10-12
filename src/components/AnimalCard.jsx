@@ -29,7 +29,8 @@ export function BotaoFavorito({ animalId, grande = false }) {
   );
 }
 
-export default function AnimalCard({ animal, score }) {
+/** extra = conteúdo opcional no rodapé do card (ex.: por que a IA recomendou este animal). */
+export default function AnimalCard({ animal, score, extra }) {
   const nivel = score != null ? nivelScore(score) : null;
   return (
     <Link to={`/animais/${animal.id}`} className="card-animal">
@@ -60,6 +61,7 @@ export default function AnimalCard({ animal, score }) {
           <span className="tag">Porte {PORTES[animal.porte].toLowerCase()}</span>
         </div>
         {animal.ong && <p className="card-animal__ong">{animal.ong.nome} · {animal.ong.cidade}</p>}
+        {extra}
       </div>
     </Link>
   );

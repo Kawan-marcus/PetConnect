@@ -23,6 +23,10 @@ const PATHS = {
   menu: 'M3 6h18M3 12h18M3 18h18',
   alerta: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
   raio: 'M13 2 3 14h9l-1 8 10-12h-9z',
+  cadeado: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4',
+  comparar: 'M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M12 2v20',
+  bussola: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16.2 7.8l-2.1 6.3-6.3 2.1 2.1-6.3z',
+  servidor: 'M4 3h16v7H4zM4 14h16v7H4zM8 6.5h.01M8 17.5h.01',
 };
 
 export default function Icone({ nome, tamanho = 20, preenchido = false, className = '', titulo }) {

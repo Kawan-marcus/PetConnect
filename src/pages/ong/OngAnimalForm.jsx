@@ -115,7 +115,14 @@ export default function OngAnimalForm() {
         setAnalisando(true);
         sugerirPorImagem(lista[0])
           .then(setSugestao)
-          .catch(() => toast('Não foi possível analisar a foto.', 'erro'))
+          .catch((e) =>
+            toast(
+              [404, 405, 501].includes(e.status)
+                ? 'A sugestão automática pela foto ainda não está disponível. Preencha os campos normalmente.'
+                : `Não foi possível analisar a foto: ${e.message}`,
+              'erro',
+            ),
+          )
           .finally(() => setAnalisando(false));
       }
     } catch (e) {

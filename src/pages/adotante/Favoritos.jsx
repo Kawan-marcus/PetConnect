@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import AnimalCard from '../../components/AnimalCard.jsx';
 import { CabecalhoPagina } from '../../components/Layout.jsx';
 import { Erro, SkeletonCards, Vazio } from '../../components/Carregando.jsx';
+import Icone from '../../components/Icone.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
 import { listarFavoritos } from '../../api/animais.js';
 import { useFavoritos } from '../../context/FavoritosContext.jsx';
@@ -14,7 +15,15 @@ export default function Favoritos() {
 
   return (
     <div className="container pagina">
-      <CabecalhoPagina titulo="Meus favoritos" subtitulo="Os animais que você salvou para ver depois." />
+      <CabecalhoPagina
+        titulo="Meus favoritos"
+        subtitulo="Os animais que você salvou para ver depois."
+        acoes={animais?.length > 1 && (
+          <Link to={`/comparar?ids=${animais.slice(0, 3).map((a) => a.id).join(',')}`} className="btn btn--fantasma">
+            <Icone nome="comparar" tamanho={16} /> Comparar compatibilidade
+          </Link>
+        )}
+      />
       <Erro erro={erro} />
       {carregando ? (
         <SkeletonCards n={3} />

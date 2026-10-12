@@ -89,11 +89,14 @@ src/
 | RF16 Histórico | `/minhas-solicitacoes`, `/ong/solicitacoes` (aba Todas), `/admin/historico` |
 | RF17–RF19 Gestão (admin) | `/admin/usuarios`, `/admin/ongs`, `/admin/animais` |
 | RF20–RF21 Compatibilidade (IA) | score com fatores no detalhe do animal e na análise da ONG |
-| RF22 Recomendação | `/recomendados` |
+| RF22 Recomendação | `/recomendados` (com filtros e o motivo de cada recomendação) |
+| Módulo 3: comparador de compatibilidade (Sprint 06) | `/comparar?ids=1,8,3` |
+| Página inicial do adotante (Sprint 06) | `/minha-area` (jornada de adoção + resumo dos 3 módulos) |
 | RF23 Classificação por imagem | cartão "A IA sugere a partir da foto" no cadastro de animal |
 | Acompanhamento pós-adoção | `/ong/acompanhamentos` |
 | Notificações | sino no topo |
 | Relatórios + comparativo OpenCL | `/admin` |
+| Navegação (Sprint 06) | trilha "Você está em", título da aba por tela, `Acesso restrito` e página 404 com atalhos |
 
 ### Regras de negócio refletidas no front
 
