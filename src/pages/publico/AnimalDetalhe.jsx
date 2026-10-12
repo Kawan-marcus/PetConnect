@@ -8,6 +8,7 @@ import { BotaoFavorito } from '../../components/AnimalCard.jsx';
 import { StatusBadge } from '../../components/Badge.jsx';
 import Carregando, { Erro } from '../../components/Carregando.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
+import { useRotuloPagina } from '../../components/Trilha.jsx';
 import { obterAnimal } from '../../api/animais.js';
 import { compatibilidade } from '../../api/ia.js';
 import { solicitarAdocao, obterFormulario, minhasSolicitacoes } from '../../api/adocoes.js';
@@ -81,7 +82,12 @@ function PainelAdocao({ animal }) {
   return (
     <div className="painel-adocao">
       {dados?.compat ? (
-        <ScoreCompatibilidade resultado={dados.compat} titulo="Sua compatibilidade" compacto />
+        <>
+          <ScoreCompatibilidade resultado={dados.compat} titulo="Sua compatibilidade" compacto />
+          <Link to={`/comparar?ids=${animal.id}`} className="btn btn--fantasma btn--bloco">
+            <Icone nome="comparar" tamanho={18} /> Comparar com outros animais
+          </Link>
+        </>
       ) : (
         <div className="card card--ia">
           <p className="eyebrow"><Icone nome="ia" tamanho={14} /> Compatibilidade</p>
@@ -136,13 +142,13 @@ function PainelAdocao({ animal }) {
 export default function AnimalDetalhe() {
   const { id } = useParams();
   const { dados: animal, carregando, erro } = useAsync(() => obterAnimal(id), [id]);
+  useRotuloPagina(animal?.nome);
 
   if (carregando) return <Carregando />;
   if (erro) return <div className="container pagina"><Erro erro={erro} /></div>;
 
   return (
     <div className="container pagina">
-      <Link to="/animais" className="btn btn--link voltar"><Icone nome="voltar" tamanho={16} /> Todos os animais</Link>
       <div className="detalhe">
         <div className="detalhe__principal">
           <Galeria fotos={animal.fotos} nome={animal.nome} />

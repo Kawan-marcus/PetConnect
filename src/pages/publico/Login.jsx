@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Campo from '../../components/Campo.jsx';
 import { Erro } from '../../components/Carregando.jsx';
-import { Patinha } from '../../components/Icone.jsx';
+import Icone, { Patinha } from '../../components/Icone.jsx';
 import { useAuth, rotaInicial } from '../../context/AuthContext.jsx';
 import { useFormulario, validadores } from '../../hooks/useFormulario.js';
 import { USE_MOCK } from '../../api/client.js';
@@ -50,6 +50,11 @@ export default function Login() {
           <p className="texto-suave">Bem-vindo de volta ao PetConnect.</p>
         </div>
 
+        {location.state?.de && !erro && (
+          <p className="alerta alerta--info">
+            <Icone nome="cadeado" tamanho={18} /> Entre para continuar. Depois do login você volta para a página que tentou abrir.
+          </p>
+        )}
         <Erro erro={erro} />
 
         <Campo rotulo="E-mail" erro={f.erros.email}>

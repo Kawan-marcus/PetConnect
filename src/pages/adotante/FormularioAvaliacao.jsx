@@ -8,6 +8,7 @@ import { useFormulario } from '../../hooks/useFormulario.js';
 import { obterFormulario, salvarFormulario } from '../../api/adocoes.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { formatarData } from '../../utils/format.js';
+import { podeVoltarNoHistorico } from '../../components/Trilha.jsx';
 
 const VAZIO = {
   tipoMoradia: '', temQuintal: null, telaProtecao: null, pessoasCasa: '', temCriancas: null, outrosAnimais: null,
@@ -157,7 +158,7 @@ export default function FormularioAvaliacao() {
         </section>
 
         <div className="form__acoes">
-          <button type="button" className="btn btn--fantasma" onClick={() => navigate(-1)}>Cancelar</button>
+          <button type="button" className="btn btn--fantasma" onClick={() => (podeVoltarNoHistorico() ? navigate(-1) : navigate('/minha-area'))}>Cancelar</button>
           <button className="btn btn--primario btn--grande" disabled={enviando}>{enviando ? 'Salvando…' : 'Salvar formulário'}</button>
         </div>
       </form>

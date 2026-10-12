@@ -28,6 +28,15 @@ function GraficoColunas({ dados }) {
 
 /** Comparativo sequencial × OpenCL. Cada tarefa tem sua própria escala (tempos muito diferentes entre tarefas). */
 function ComparativoDesempenho({ dados }) {
+  if (!dados.medicoes?.length) {
+    return (
+      <div className="alerta alerta--info">
+        <Icone nome="relogio" />
+        <span>Nenhuma medição registrada ainda. Quando o módulo de processamento rodar o comparativo, os tempos aparecem aqui automaticamente.</span>
+      </div>
+    );
+  }
+  const ganhoDe = (m) => (m.openclMs > 0 ? m.sequencialMs / m.openclMs : null);
   return (
     <div className="comparativo">
       <div className="legenda">
@@ -35,19 +44,21 @@ function ComparativoDesempenho({ dados }) {
         <span><i className="legenda__cor legenda__cor--gpu" /> OpenCL (paralelo)</span>
       </div>
       {dados.medicoes.map((m) => {
-        const ganho = m.sequencialMs / m.openclMs;
+        const ganho = ganhoDe(m);
         return (
           <div key={m.tarefa} className="comparativo__tarefa">
             <div className="comparativo__topo">
               <span>{m.tarefa}</span>
-              <strong className="comparativo__ganho">{ganho.toFixed(1).replace('.', ',')}× mais rápido</strong>
+              <strong className="comparativo__ganho">
+                {ganho == null ? '—' : ganho >= 1 ? `${ganho.toFixed(1).replace('.', ',')}× mais rápido` : `${(1 / ganho).toFixed(1).replace('.', ',')}× mais lento`}
+              </strong>
             </div>
             <div className="comparativo__linha" title={`Sequencial: ${m.sequencialMs} ms`}>
               <div className="comparativo__barra comparativo__barra--cpu" style={{ width: '100%' }} />
               <span className="comparativo__valor">{m.sequencialMs.toLocaleString('pt-BR')} ms</span>
             </div>
             <div className="comparativo__linha" title={`OpenCL: ${m.openclMs} ms`}>
-              <div className="comparativo__barra comparativo__barra--gpu" style={{ width: `${Math.max(1.5, (m.openclMs / m.sequencialMs) * 100)}%` }} />
+              <div className="comparativo__barra comparativo__barra--gpu" style={{ width: `${Math.min(100, Math.max(1.5, (m.openclMs / (m.sequencialMs || 1)) * 100))}%` }} />
               <span className="comparativo__valor">{m.openclMs.toLocaleString('pt-BR')} ms</span>
             </div>
           </div>
@@ -63,7 +74,7 @@ function ComparativoDesempenho({ dados }) {
                 <td>{m.tarefa}</td>
                 <td className="direita">{m.sequencialMs}</td>
                 <td className="direita">{m.openclMs}</td>
-                <td className="direita">{(m.sequencialMs / m.openclMs).toFixed(1)}×</td>
+                <td className="direita">{ganhoDe(m) == null ? '—' : `${ganhoDe(m).toFixed(1)}×`}</td>
               </tr>
             ))}
           </tbody>

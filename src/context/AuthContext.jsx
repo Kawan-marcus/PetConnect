@@ -65,5 +65,5 @@ export function rotaInicial(usuario) {
   if (!usuario) return '/';
   if (usuario.perfil === 'admin') return '/admin';
   if (usuario.perfil === 'ong') return '/ong';
-  return '/animais';
+  return '/minha-area';
 }
