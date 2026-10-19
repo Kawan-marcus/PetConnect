@@ -15,6 +15,9 @@ erDiagram
     USUARIO ||--o{ ANALISE_COMPATIBILIDADE : "é avaliado em"
     ANIMAL ||--o{ ANALISE_COMPATIBILIDADE : "é avaliado em"
     ONG ||--o{ CLASSIFICACAO_IMAGEM : "solicita"
+    ANALISE_COMPATIBILIDADE |o--o{ SOLICITACAO : "fundamenta o score"
+    MODELO_IA ||--o{ ANALISE_COMPATIBILIDADE : "produz"
+    USUARIO |o--o{ LOG_ACAO : "realiza"
 
     ONG { string nome string cnpj string cidade string status }
     USUARIO { string nome string email string perfil boolean ativo }
@@ -28,3 +31,6 @@ erDiagram
     ANALISE_COMPATIBILIDADE { int score json fatores string modelo }
     CLASSIFICACAO_IMAGEM { string especie_sugerida string raca_sugerida string porte_sugerido }
     MEDICAO_DESEMPENHO { string tarefa decimal sequencial_ms decimal opencl_ms }
+    MODELO_IA { string tipo string versao string algoritmo json metricas boolean ativo }
+    AMOSTRA_TREINO { int features int rotulo }
+    LOG_ACAO { string acao string entidade json detalhes datetime criado_em }

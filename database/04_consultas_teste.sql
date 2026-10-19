@@ -54,7 +54,7 @@ INSERT INTO animal (ong_id, nome, especie, raca, idade_meses, sexo, porte, energ
   convivencia_criancas, convivencia_animais, castrado, vacinado, descricao)
 VALUES (1, 'Teste', 'cao', 'SRD', 12, 'M', 'medio', 'media', TRUE, TRUE, TRUE, TRUE,
   'Animal criado para testar o CRUD do banco.');
-SET @novo = LAST_INSERT_ID();
+SET @novo = (SELECT MAX(id) FROM animal);   -- o animal que acabou de ser criado
 INSERT INTO foto_animal (animal_id, url, ordem) VALUES (@novo, '/animais/1-1.svg', 0);
 
 -- READ
