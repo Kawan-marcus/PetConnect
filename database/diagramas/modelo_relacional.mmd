@@ -88,6 +88,7 @@ erDiagram
         int usuario_id FK
         enum status
         tinyint score
+        bigint analise_id FK "Sprint 06"
         text mensagem
         text motivo_recusa
         datetime criado_em
@@ -144,6 +145,44 @@ erDiagram
         decimal tempo_ms
         datetime criado_em
     }
+    modelo_ia {
+        int id PK
+        enum tipo
+        varchar versao UK
+        varchar algoritmo
+        text descricao
+        int amostras_treino
+        json metricas
+        json parametros
+        bool ativo
+        datetime treinado_em
+        datetime criado_em
+    }
+    amostra_treino {
+        int id PK
+        enum origem
+        tinyint apartamento
+        tinyint tem_quintal
+        tinyint horas_sozinho
+        tinyint experiencia_cod
+        tinyint atividade_cod
+        tinyint gato
+        tinyint porte_cod
+        tinyint energia_cod
+        smallint idade_meses
+        tinyint rotulo
+    }
+    log_acao {
+        bigint id PK
+        int usuario_id FK
+        varchar acao
+        varchar entidade
+        bigint entidade_id
+        json detalhes
+        enum origem
+        varchar ip
+        datetime criado_em
+    }
     medicao_desempenho {
         int id PK
         varchar tarefa
@@ -170,3 +209,5 @@ erDiagram
     usuario ||--o{ analise_compatibilidade : "usuario_id"
     animal ||--o{ analise_compatibilidade : "animal_id"
     ong ||--o{ classificacao_imagem : "ong_id"
+    analise_compatibilidade |o--o{ solicitacao : "analise_id"
+    usuario |o--o{ log_acao : "usuario_id"

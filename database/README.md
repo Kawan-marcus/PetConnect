@@ -8,6 +8,9 @@ Banco da Plataforma de Adoção de Animais, alinhado com o front-end (`docs/CONT
 | `02_views.sql` | Consultas prontas (animais públicos, dashboard, histórico) |
 | `03_seed.sql` | Dados de exemplo: os mesmos do modo demonstração do front |
 | `04_consultas_teste.sql` | Consultas de verificação e testes das regras, para as evidências do PDF |
+| `05_sprint06_modulo3.sql` | **Sprint 06:** tabelas do módulo 3 e de logs, views de integração, triggers e procedures. Não apaga dados e pode ser rodado de novo |
+| `06_massa_dados.sql` | **Sprint 06:** gera milhares de animais/adotantes fictícios para o teste de desempenho com OpenCL (invisíveis no site) |
+| `07_consultas_sprint06.sql` | **Sprint 06:** consultas de evidência do módulo 3, da integração e dos logs |
 | `diagramas/mer_conceitual.png` | MER (modelo conceitual) |
 | `diagramas/modelo_relacional.png` | Modelo relacional (tabelas, PK, FK) |
 | `diagramas/*.mmd` | Fonte dos diagramas (Mermaid; o GitHub mostra como imagem) |
@@ -21,20 +24,24 @@ Banco da Plataforma de Adoção de Animais, alinhado com o front-end (`docs/CONT
 ### Opção 1: MySQL Workbench
 1. Abra a conexão local (normalmente `root@localhost`).
 2. **File → Open SQL Script** → `01_schema.sql` → clique no raio ⚡ para executar.
-3. Repita com `02_views.sql` e depois com `03_seed.sql`, nessa ordem.
+3. Repita com `02_views.sql`, `03_seed.sql` e `05_sprint06_modulo3.sql`, nessa ordem.
 4. Clique com o botão direito em **Schemas** → **Refresh All**. O banco `petconnect` aparece.
 
 ### Opção 2: XAMPP (phpMyAdmin)
 1. Inicie **Apache** e **MySQL** no painel do XAMPP e abra http://localhost/phpmyadmin.
 2. Aba **Importar** → escolha `01_schema.sql` → **Importar**.
-3. Repita com `02_views.sql` e `03_seed.sql`.
+3. Repita com `02_views.sql`, `03_seed.sql` e `05_sprint06_modulo3.sql`.
 
 ### Opção 3: Terminal
 ```bash
 mysql -u root -p < 01_schema.sql
 mysql -u root -p < 02_views.sql
 mysql -u root -p < 03_seed.sql
+mysql -u root -p < 05_sprint06_modulo3.sql
 ```
+
+> **Já tem o banco criado?** Rode só o `05_sprint06_modulo3.sql`. Ele acrescenta o que é da Sprint 06 sem apagar nada.
+> Execute os scripts como `root` (ou outro usuário com permissão de criar triggers e procedures), não com o usuário `petconnect_app` do backend.
 
 > ⚠️ O `01_schema.sql` **apaga e recria** o banco `petconnect`. Use-o para começar do zero, nunca num banco com dados que precisam ser mantidos.
 
@@ -74,6 +81,21 @@ bcrypt.hashpw(senha.encode(), bcrypt.gensalt()).decode()
 | `analise_compatibilidade` | Resultado do modelo de compatibilidade (score + fatores) | RF20–RF22 |
 | `classificacao_imagem` | Sugestão de espécie/raça/porte pela foto | RF23 |
 | `medicao_desempenho` | Tempos sequencial × OpenCL do dashboard | Tópicos Avançados |
+| `modelo_ia` *(Sprint 06)* | Versões do modelo de IA, algoritmo e métricas do treino; só uma versão ativa por tipo | Módulo 3 |
+| `amostra_treino` *(Sprint 06)* | Exemplos rotulados para treinar o modelo de compatibilidade | Módulo 3 |
+| `log_acao` *(Sprint 06)* | Logs de auditoria: quem fez o quê e quando | Logs (PDF) |
+
+### Views da Sprint 06
+
+| View | Para que serve |
+|---|---|
+| `vw_features_animal`, `vw_features_adotante` | Variáveis já em número (0/1/2) para montar os vetores do modelo e do OpenCL |
+| `vw_dataset_treino` | Dataset de treino: casos reais (concluída = 1, recusada = 0) + `amostra_treino` |
+| `vw_ultima_analise`, `vw_ranking_compatibilidade` | Cache da IA e ranking de animais por adotante |
+| `vw_integracao_adocao` | Uma linha por solicitação juntando os 3 módulos |
+| `vw_eficacia_ia` | Score médio por resultado (aprovadas × recusadas) |
+| `vw_desempenho_resumo` | Médias sequencial × OpenCL por tarefa |
+| `vw_log_detalhado` | Logs com o nome e o perfil de quem fez a ação |
 
 ---
 
@@ -90,6 +112,9 @@ bcrypt.hashpw(senha.encode(), bcrypt.gensalt()).decode()
 5. **Fotos em tabela própria.** O banco guarda só o endereço (`url`); o arquivo fica no servidor. Isso evita um banco pesado e permite várias fotos por animal.
 6. **Tabelas do componente de IA.** Guardam as entradas e saídas dos modelos (`fatores` em JSON, versão do `modelo`, `tempo_ms`). Isso serve de cache para as recomendações, permite auditar as sugestões e alimenta o comparativo de desempenho com OpenCL.
 7. **Senhas com bcrypt**, nunca em texto puro.
+8. **Logs garantidos pelo banco (Sprint 06).** Triggers gravam em `log_acao` toda mudança de status de solicitação, animal, ONG e conta, mesmo que o backend esqueça. O backend só precisa registrar o que o banco não vê (login).
+9. **Versão do modelo registrada (Sprint 06).** Cada análise guarda a versão do modelo que a produziu, e `modelo_ia` guarda o algoritmo e as métricas. Trocar a fórmula pelo modelo treinado não apaga o histórico.
+10. **Massa de dados isolada (Sprint 06).** Os dados de teste de desempenho ficam numa ONG pendente: o site não mostra (RN04) e `sp_limpar_massa_dados()` apaga tudo de uma vez.
 
 ---
 
