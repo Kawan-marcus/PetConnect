@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 
 
 
@@ -15,6 +15,7 @@ from sqlalchemy import text
 
 
 from app.database import engine
+from app.logs import registrar_log
 
 
 
@@ -216,11 +217,15 @@ class CadastroOngRequest(BaseModel):
 
 
 
+def _log_login(usuario_id, acao, email, request):
+    """Grava tentativas de login em log_acao (Sprint 06). A senha nunca vai para o log."""
+    with engine.begin() as conexao:
+        registrar_log(conexao, usuario_id, acao, "usuario", usuario_id,
+                      {"email": email}, request.client.host if request.client else None)
+
+
 @router.post("/login")
-
-
-
-def login(dados: LoginRequest):
+def login(dados: LoginRequest, request: Request):
 
 
 
@@ -376,6 +381,7 @@ def login(dados: LoginRequest):
 
 
 
+        _log_login(None, "auth.login_falhou", email, request)
         raise HTTPException(
 
 
@@ -400,6 +406,7 @@ def login(dados: LoginRequest):
 
 
 
+        _log_login(usuario["id"], "auth.login_conta_inativa", email, request)
         raise HTTPException(
 
 
@@ -436,6 +443,7 @@ def login(dados: LoginRequest):
 
 
 
+        _log_login(usuario["id"], "auth.login_falhou", email, request)
         raise HTTPException(
 
 
@@ -457,6 +465,7 @@ def login(dados: LoginRequest):
 
 
     token = gerar_token(usuario["id"])
+    _log_login(usuario["id"], "auth.login", email, request)
 
 
 

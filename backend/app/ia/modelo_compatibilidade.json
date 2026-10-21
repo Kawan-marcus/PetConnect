@@ -1,0 +1,45 @@
+{
+  "versao": "compat-logreg-v1",
+  "tipo": "logistico",
+  "algoritmo": "Regressão logística (scikit-learn)",
+  "descricao": "Probabilidade de a adoção dar certo a partir dos 6 fatores de compatibilidade e do pior fator.",
+  "entradas": [
+    "espaco",
+    "energia",
+    "rotina",
+    "criancas",
+    "animais",
+    "experiencia",
+    "pior_fator"
+  ],
+  "coeficientes": [
+    1.987646,
+    1.350397,
+    2.457721,
+    2.011547,
+    1.417701,
+    0.942233,
+    2.411721
+  ],
+  "intercepto": -8.958185,
+  "importancia": [
+    0.1955,
+    0.1328,
+    0.2417,
+    0.1978,
+    0.1394,
+    0.0927
+  ],
+  "amostras_treino": 16000,
+  "metricas": {
+    "acuracia": 0.7675,
+    "precisao": 0.7873,
+    "recall": 0.8307,
+    "f1": 0.8084,
+    "auc": 0.8412,
+    "auc_regra_antiga": 0.8354,
+    "casos_teste": 4000,
+    "casos_reais": 0
+  },
+  "treinado_em": "2026-10-21T16:03:36"
+}

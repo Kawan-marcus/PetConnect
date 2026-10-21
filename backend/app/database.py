@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import URL
 
 load_dotenv()
@@ -20,6 +20,17 @@ engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True
 )
+
+
+@event.listens_for(engine, "checkout")
+def _limpar_usuario_logado(conexao_dbapi, registro, proxy):
+    """
+    As conexões são reaproveitadas entre requisições. Zera a variável usada
+    pelos triggers de log para um pedido nunca herdar o usuário de outro.
+    """
+    cursor = conexao_dbapi.cursor()
+    cursor.execute("SET @app_usuario_id = NULL")
+    cursor.close()
 
 
 def testar_conexao():

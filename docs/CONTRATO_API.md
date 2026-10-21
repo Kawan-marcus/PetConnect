@@ -153,6 +153,17 @@ Se não houver formulário: `{ "itens": [], "semFormulario": true }`.
   "tempoMs": 142, "modelo": "visao-v1" }
 ```
 
+**GET `/ia/modelo`** (público, Sprint 06). Modelo em uso e onde ele roda:
+
+```json
+{ "versao": "compat-logreg-v1", "tipo": "logistico", "algoritmo": "Regressão logística (scikit-learn)",
+  "amostrasTreino": 16000, "metricas": { "acuracia": 0.77, "auc": 0.84, "auc_regra_antiga": 0.84 },
+  "importancia": [ { "chave": "rotina", "nome": "Tempo que o animal ficaria sozinho", "peso": 0.24 } ],
+  "motor": "opencl", "dispositivo": "NVIDIA GeForce GTX 1650 (OpenCL 3.0 CUDA)" }
+```
+
+Na Sprint 06, `GET /ia/recomendacoes` também passou a devolver `motor` (`opencl` ou `numpy`) e `dispositivo`, e o `tempoMs` agora é o tempo real do cálculo em lote.
+
 **GET `/admin/desempenho`** (admin). Medições reais para comparar sequencial × OpenCL:
 
 ```json

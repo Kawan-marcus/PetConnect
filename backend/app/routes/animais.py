@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 
 from app.database import engine
+from app.logs import definir_usuario_logado
 from app.security import obter_usuario_id_token
 
 
@@ -425,6 +426,7 @@ def atualizar_animal(
     # -----------------------------------------------------
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         # Descobre a ONG do usuário autenticado
         usuario = conexao.execute(
@@ -660,6 +662,7 @@ def alterar_status_animal(
         )
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         # Busca o usuário logado
         usuario = conexao.execute(
@@ -756,6 +759,7 @@ def remover_animal(
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         # Busca o usuário logado
         usuario = conexao.execute(
