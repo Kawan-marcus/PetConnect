@@ -7,3 +7,4 @@ O documento é acumulado: cada versão contém todas as Sprints anteriores e a a
 
 - **Sprint 06:** o que o front-end entregou (módulo 3, integração, interface e navegação) está em [`SPRINT06_FRONT.md`](SPRINT06_FRONT.md), com prints de antes e depois em [`sprint06/`](sprint06/).
 - **Sprint 06 (banco de dados):** módulo 3, integração e logs no MySQL estão em [`SPRINT06_BANCO.md`](SPRINT06_BANCO.md). Scripts `database/05`, `06` e `07`.
+- **Sprint 06 (back-end):** módulo 3 com modelo treinado, OpenCL, integração e logs está em [`SPRINT06_BACK.md`](SPRINT06_BACK.md).

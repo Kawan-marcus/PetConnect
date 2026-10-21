@@ -42,6 +42,29 @@ uvicorn app.main:app --reload --port 8000
 - http://localhost:8000/api/health/db → `{"status": "conectado", "banco": "petconnect"}`
 - http://localhost:8000/docs → documentação interativa de todas as rotas (Swagger)
 
+## Módulo 3: IA de compatibilidade e OpenCL (Sprint 06)
+
+O cálculo fica em `app/ia/`:
+- **Modelo treinado:** regressão logística (scikit-learn) sobre os 6 fatores de compatibilidade. O score é a probabilidade de a adoção dar certo × 100.
+- **Cálculo em lote na GPU:** um kernel OpenCL calcula o score de todos os pares adotante × animal em paralelo. Sem OpenCL, a API usa NumPy, com o mesmo resultado.
+
+| Comando (na pasta `backend`, com o venv ativado) | O que faz |
+|---|---|
+| `python -m app.ia.treinar --registrar` | Treina o modelo (dados simulados + casos reais da `vw_dataset_treino`), mostra as métricas, salva `app/ia/modelo_compatibilidade.json` e registra a versão em `modelo_ia` |
+| `python -m app.ia.benchmark --registrar` | Mede sequencial × NumPy × OpenCL e grava em `medicao_desempenho` (aparece no painel do admin) |
+| `http://localhost:8000/api/ia/modelo` | Mostra o modelo em uso, as métricas e se está rodando em OpenCL ou NumPy |
+
+**Para usar a GPU:**
+1. Rode `pip install -r requirements-opencl.txt`.
+2. Confira se o driver da placa de vídeo está atualizado. Os drivers da NVIDIA, AMD e Intel já trazem o OpenCL.
+
+Para o benchmark ter volume, gere antes a massa de dados no MySQL com `database/06_massa_dados.sql`.
+
+## Logs (Sprint 06)
+- As mudanças de status são gravadas em `log_acao` pelos triggers do banco. As rotas informam quem fez com `definir_usuario_logado()`.
+- O login (certo, errado ou com conta inativa) é gravado pelo backend em `app/logs.py`.
+- Os logs também aparecem no terminal do uvicorn.
+
 ## Estrutura
 ```
 backend/
@@ -59,7 +82,9 @@ backend/
       solicitacoes.py    # fluxo de adoção (RN01–RN05) + histórico
       acompanhamentos.py # pós-adoção
       notificacoes.py    # sino de notificações
-      ia.py              # compatibilidade e recomendações
+      ia.py              # rotas da IA: compatibilidade, recomendações, modelo
+    ia/                # módulo 3: fatores, modelo treinado, kernel OpenCL, treino e benchmark
+    logs.py            # registro de logs (log_acao)
       uploads.py         # envio de fotos
       admin.py           # painel do administrador (usuários, ONGs, animais, estatísticas)
   uploads/           # fotos enviadas (não vão para o GitHub)

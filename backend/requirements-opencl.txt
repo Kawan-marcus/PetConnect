@@ -1,0 +1,5 @@
+# Opcional: processamento paralelo na GPU (módulo 3 / Tópicos Avançados).
+# Precisa também do driver da placa de vídeo com suporte a OpenCL (NVIDIA, AMD ou Intel).
+# Sem isto, o backend funciona normalmente usando NumPy na CPU.
+#   pip install -r requirements-opencl.txt
+pyopencl

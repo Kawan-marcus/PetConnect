@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 
 from app.database import engine
+from app.logs import definir_usuario_logado
 from app.security import obter_usuario_id_token
 
 
@@ -270,6 +271,7 @@ def cadastrar_animal(
     # -----------------------------------------------------
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         usuario = verificar_ong(
             conexao,

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy import bindparam, text
 
 from app.database import engine
+from app.logs import definir_usuario_logado
 
 from app.security import obter_usuario_id_token
 
@@ -211,6 +212,7 @@ def solicitar_adocao(
 ):
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         # ----------------------------------------------------
 
@@ -426,70 +428,27 @@ def solicitar_adocao(
 
         # ----------------------------------------------------
 
-        from app.routes.ia import calcular_compatibilidade
-
-        compatibilidade = calcular_compatibilidade(
-
-            formulario,
-
-            animal
-
-        )
-
+        # Módulo 3: calcula com o modelo treinado e grava a análise (analise_compatibilidade)
+        from app.ia.servico import avaliar_e_salvar, existe
+        compatibilidade, analise_id = avaliar_e_salvar(conexao, usuario_id, formulario, animal)
         score = compatibilidade["score"]
 
         # ----------------------------------------------------
-
-        # Grava a solicitação no MySQL
-
+        # Grava a solicitação no MySQL, ligada à análise da IA (Sprint 06)
         # ----------------------------------------------------
-
+        com_analise = analise_id is not None and existe(conexao, "solicitacao", "analise_id")
         resultado = conexao.execute(
-
-            text("""
-
-                INSERT INTO solicitacao (
-
-                    animal_id,
-
-                    usuario_id,
-
-                    status,
-
-                    score,
-
-                    mensagem
-
-                )
-
-                VALUES (
-
-                    :animal_id,
-
-                    :usuario_id,
-
-                    'pendente',
-
-                    :score,
-
-                    :mensagem
-
-                )
-
+            text(f"""
+                INSERT INTO solicitacao (animal_id, usuario_id, status, score, mensagem{", analise_id" if com_analise else ""})
+                VALUES (:animal_id, :usuario_id, 'pendente', :score, :mensagem{", :analise_id" if com_analise else ""})
             """),
-
             {
-
                 "animal_id": dados.animalId,
-
                 "usuario_id": usuario_id,
-
                 "score": score,
-
-                "mensagem": dados.mensagem.strip()
-
+                "mensagem": dados.mensagem.strip(),
+                "analise_id": analise_id,
             }
-
         )
 
         solicitacao_id = resultado.lastrowid
@@ -752,6 +711,7 @@ def cancelar_solicitacao(
 ):
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         solicitacao = conexao.execute(
 
@@ -884,6 +844,7 @@ def analisar_solicitacao(
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
         usuario = verificar_ong(conexao, usuario_id)
 
         solicitacao = conexao.execute(
@@ -967,6 +928,7 @@ def recusar_solicitacao(
         raise HTTPException(status_code=400, detail="Informe o motivo da recusa.")
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
         usuario = verificar_ong(conexao, usuario_id)
 
         solicitacao = conexao.execute(
@@ -1056,6 +1018,7 @@ def aprovar_solicitacao(
 ):
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         # ----------------------------------------------------
 
@@ -1440,6 +1403,7 @@ def concluir_adocao(
 ):
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
 
         # ----------------------------------------------------
 

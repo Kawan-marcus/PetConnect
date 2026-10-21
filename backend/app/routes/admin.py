@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 
 from app.database import engine
+from app.logs import definir_usuario_logado
 from app.security import obter_usuario_id_token
 from app.routes.solicitacoes import buscar_historicos, criar_notificacao
 
@@ -117,6 +118,7 @@ def atualizar_usuario(
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
         exigir_admin(conexao, usuario_id)
 
         if alvo_id == usuario_id and not dados.ativo:
@@ -223,6 +225,7 @@ def alterar_status_ong(
         raise HTTPException(status_code=400, detail="Status inválido. Use: pendente, aprovada ou suspensa.")
 
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
         exigir_admin(conexao, usuario_id)
 
         ong = conexao.execute(
@@ -343,6 +346,7 @@ def remover_animal(
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.begin() as conexao:
+        definir_usuario_logado(conexao, usuario_id)
         exigir_admin(conexao, usuario_id)
 
         animal = conexao.execute(
