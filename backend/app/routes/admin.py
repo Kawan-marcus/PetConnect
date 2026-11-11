@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import text
 
@@ -64,6 +64,8 @@ def iso(valor):
 def listar_usuarios(
     perfil: str | None = None,
     busca: str | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     filtros = ["1 = 1"]
@@ -86,8 +88,9 @@ def listar_usuarios(
                 FROM usuario
                 WHERE {" AND ".join(filtros)}
                 ORDER BY criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
-            parametros
+            {**parametros, "limit": limit, "offset": offset}
         ).mappings().all()
 
     return [
@@ -123,6 +126,21 @@ def atualizar_usuario(
 
         if alvo_id == usuario_id and not dados.ativo:
             raise HTTPException(status_code=409, detail="Você não pode desativar a sua própria conta.")
+
+        if not dados.ativo:
+            alvo = conexao.execute(
+                text("SELECT perfil, ativo FROM usuario WHERE id = :id FOR UPDATE"),
+                {"id": alvo_id}
+            ).mappings().first()
+            if alvo and alvo["perfil"] == "admin" and alvo["ativo"]:
+                admins_ativos = conexao.execute(
+                    text("SELECT id FROM usuario WHERE perfil = 'admin' AND ativo = 1 FOR UPDATE")
+                ).scalars().all()
+                if len(admins_ativos) <= 1:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Não é possível desativar o último administrador ativo."
+                    )
 
         resultado = conexao.execute(
             text("UPDATE usuario SET ativo = :ativo WHERE id = :alvo_id"),
@@ -164,6 +182,8 @@ def atualizar_usuario(
 @router.get("/ongs")
 def listar_ongs(
     status: str | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     parametros = {}
@@ -189,8 +209,9 @@ def listar_ongs(
                 FROM ong o
                 {where}
                 ORDER BY o.criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
-            parametros
+            {**parametros, "limit": limit, "offset": offset}
         ).mappings().all()
 
     return [
@@ -278,6 +299,8 @@ def alterar_status_ong(
 def listar_todos_animais(
     status: str | None = None,
     especie: str | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     filtros = ["a.excluido_em IS NULL"]
@@ -304,8 +327,9 @@ def listar_todos_animais(
                 JOIN ong o ON o.id = a.ong_id
                 WHERE {" AND ".join(filtros)}
                 ORDER BY a.criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
-            parametros
+            {**parametros, "limit": limit, "offset": offset}
         ).mappings().all()
 
         resposta = []
@@ -386,6 +410,8 @@ def remover_animal(
 
 @router.get("/solicitacoes")
 def listar_todas_solicitacoes(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
@@ -402,8 +428,9 @@ def listar_todas_solicitacoes(
                 JOIN animal a ON a.id = s.animal_id
                 JOIN usuario u ON u.id = s.usuario_id
                 JOIN ong o ON o.id = a.ong_id
-                ORDER BY s.criado_em DESC
-            """)
+                ORDER BY s.criado_em DESC\n                LIMIT :limit OFFSET :offset
+            """),
+            {"limit": limit, "offset": offset}
         ).mappings().all()
 
         historicos = buscar_historicos(conexao, [s["id"] for s in linhas])

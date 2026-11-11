@@ -1,18 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 
-
-
 from pydantic import BaseModel
 
-
-
 from sqlalchemy import text
-
-
-
-
-
-
 
 from app.database import engine
 from app.logs import registrar_log

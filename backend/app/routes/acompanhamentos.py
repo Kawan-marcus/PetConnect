@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import text
 
@@ -35,6 +35,7 @@ def verificar_ong(conexao, usuario_id: int):
                 u.id,
                 u.perfil,
                 u.ong_id,
+                u.ativo,
                 o.nome AS ong_nome,
                 o.status AS ong_status
             FROM usuario u
@@ -57,6 +58,9 @@ def verificar_ong(conexao, usuario_id: int):
             detail="Usuário não encontrado."
         )
 
+    if not usuario["ativo"]:
+        raise HTTPException(status_code=401, detail="Conta desativada.")
+
     if usuario["perfil"] != "ong":
         raise HTTPException(
             status_code=403,
@@ -69,6 +73,12 @@ def verificar_ong(conexao, usuario_id: int):
             detail="Usuário não está vinculado a uma ONG."
         )
 
+    if usuario.get("ong_status") != "aprovada":
+        raise HTTPException(
+            status_code=403,
+            detail="A ONG precisa estar aprovada e ativa para realizar esta operação."
+        )
+
     return usuario
 
 
@@ -79,6 +89,8 @@ def verificar_ong(conexao, usuario_id: int):
 
 @router.get("/ong/adocoes")
 def listar_adocoes_da_ong(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
@@ -125,10 +137,12 @@ def listar_adocoes_da_ong(
                   AND s.status = 'concluida'
                   AND a.excluido_em IS NULL
 
-                ORDER BY s.atualizado_em DESC
+                ORDER BY s.atualizado_em DESC\n                LIMIT :limit OFFSET :offset
             """),
             {
-                "ong_id": usuario["ong_id"]
+                "ong_id": usuario["ong_id"],
+                "limit": limit,
+                "offset": offset
             }
         ).mappings().all()
 

@@ -6,10 +6,17 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import bcrypt
 import jwt
 from dotenv import load_dotenv
+from sqlalchemy import text
+from app.database import engine
 
 load_dotenv()
 
-JWT_SECRET = os.getenv("JWT_SECRET", "chave-dev-petconnect")
+JWT_SECRET = os.getenv("JWT_SECRET")
+if not JWT_SECRET:
+    if os.getenv("APP_ENV", "development").lower() == "production":
+        raise RuntimeError("JWT_SECRET não configurado. Defina uma chave forte no ambiente.")
+    # Chave local apenas para desenvolvimento; nunca usar em produção.
+    JWT_SECRET = "chave-dev-petconnect-nao-usar-em-producao"
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = 480
 
@@ -66,7 +73,23 @@ def obter_usuario_id_token(
                 detail="Token inválido."
             )
 
-        return int(usuario_id)
+        try:
+            usuario_id = int(usuario_id)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=401, detail="Token inválido.")
+
+        # Revalida a conta no banco em toda requisição autenticada.
+        # Isso invalida imediatamente sessões de usuários desativados.
+        with engine.connect() as conexao:
+            usuario = conexao.execute(
+                text("SELECT ativo FROM usuario WHERE id = :id"),
+                {"id": usuario_id}
+            ).mappings().first()
+
+        if not usuario or not usuario["ativo"]:
+            raise HTTPException(status_code=401, detail="Conta inexistente ou desativada.")
+
+        return usuario_id
 
     except jwt.ExpiredSignatureError:
         raise HTTPException(

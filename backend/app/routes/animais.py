@@ -44,7 +44,9 @@ def listar_animais(
     sexo: str | None = None,
     idade: str | None = None,
     busca: str | None = None,
-    ordenar: str = Query(default="recentes")
+    ordenar: str = Query(default="recentes"),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0)
 ):
     filtros = [
         "a.excluido_em IS NULL",
@@ -137,10 +139,12 @@ def listar_animais(
         WHERE {where}
 
         ORDER BY {ordem}
+        LIMIT :limit OFFSET :offset
     """)
 
     with engine.connect() as conexao:
 
+        parametros.update({"limit": limit, "offset": offset})
         animais = conexao.execute(
             consulta,
             parametros
@@ -450,6 +454,17 @@ def atualizar_animal(
                 detail="Usuário não encontrado."
             )
 
+
+        ong_status = conexao.execute(
+            text("SELECT status FROM ong WHERE id = :ong_id"),
+            {"ong_id": usuario["ong_id"]}
+        ).scalar()
+        if ong_status != "aprovada":
+            raise HTTPException(
+                status_code=403,
+                detail="A ONG precisa estar aprovada para gerenciar animais."
+            )
+
         if usuario["perfil"] != "ong":
             raise HTTPException(
                 status_code=403,
@@ -661,6 +676,12 @@ def alterar_status_animal(
             detail="Status do animal inválido."
         )
 
+    if dados.status != "disponivel":
+        raise HTTPException(
+            status_code=409,
+            detail="Os status 'em_processo' e 'adotado' são controlados pelo fluxo de solicitações de adoção."
+        )
+
     with engine.begin() as conexao:
         definir_usuario_logado(conexao, usuario_id)
 
@@ -684,6 +705,17 @@ def alterar_status_animal(
             raise HTTPException(
                 status_code=404,
                 detail="Usuário não encontrado."
+            )
+
+
+        ong_status = conexao.execute(
+            text("SELECT status FROM ong WHERE id = :ong_id"),
+            {"ong_id": usuario["ong_id"]}
+        ).scalar()
+        if ong_status != "aprovada":
+            raise HTTPException(
+                status_code=403,
+                detail="A ONG precisa estar aprovada para gerenciar animais."
             )
 
         if usuario["perfil"] != "ong":
@@ -728,6 +760,22 @@ def alterar_status_animal(
                 status_code=403,
                 detail="Você não pode alterar um animal de outra ONG."
             )
+
+        if dados.status == "disponivel":
+            solicitacoes_ativas = conexao.execute(
+                text("""
+                    SELECT COUNT(*)
+                    FROM solicitacao
+                    WHERE animal_id = :animal_id
+                      AND status IN ('pendente', 'em_analise', 'aprovada')
+                """),
+                {"animal_id": animal_id}
+            ).scalar() or 0
+            if solicitacoes_ativas:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Não é possível disponibilizar o animal enquanto houver solicitações em andamento."
+                )
 
         # Atualiza status
         conexao.execute(
@@ -781,6 +829,17 @@ def remover_animal(
             raise HTTPException(
                 status_code=404,
                 detail="Usuário não encontrado."
+            )
+
+
+        ong_status = conexao.execute(
+            text("SELECT status FROM ong WHERE id = :ong_id"),
+            {"ong_id": usuario["ong_id"]}
+        ).scalar()
+        if ong_status != "aprovada":
+            raise HTTPException(
+                status_code=403,
+                detail="A ONG precisa estar aprovada para gerenciar animais."
             )
 
         if usuario["perfil"] != "ong":

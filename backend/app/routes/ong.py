@@ -49,6 +49,7 @@ def verificar_ong(conexao, usuario_id: int):
                 u.id,
                 u.perfil,
                 u.ong_id,
+                u.ativo,
                 o.nome AS ong_nome,
                 o.status AS ong_status
             FROM usuario u
@@ -66,6 +67,9 @@ def verificar_ong(conexao, usuario_id: int):
             detail="Usuário não encontrado."
         )
 
+    if not usuario["ativo"]:
+        raise HTTPException(status_code=401, detail="Conta desativada.")
+
     if usuario["perfil"] != "ong":
         raise HTTPException(
             status_code=403,
@@ -78,6 +82,12 @@ def verificar_ong(conexao, usuario_id: int):
             detail="Usuário não está vinculado a uma ONG."
         )
 
+    if usuario.get("ong_status") != "aprovada":
+        raise HTTPException(
+            status_code=403,
+            detail="A ONG precisa estar aprovada e ativa para realizar esta operação."
+        )
+
     return usuario
 
 
@@ -88,6 +98,8 @@ def verificar_ong(conexao, usuario_id: int):
 @router.get("/animais")
 def listar_animais_da_ong(
     status: str | None = Query(default=None),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
@@ -98,7 +110,9 @@ def listar_animais_da_ong(
         )
 
         parametros = {
-            "ong_id": usuario["ong_id"]
+            "ong_id": usuario["ong_id"],
+            "limit": limit,
+            "offset": offset
         }
 
         filtro_status = ""
@@ -134,6 +148,7 @@ def listar_animais_da_ong(
                   AND a.excluido_em IS NULL
                   {filtro_status}
                 ORDER BY a.criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
             parametros
         ).mappings().all()
@@ -447,6 +462,8 @@ def cadastrar_animal(
 
 @router.get("/solicitacoes")
 def listar_solicitacoes_da_ong(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
@@ -483,10 +500,12 @@ def listar_solicitacoes_da_ong(
                 WHERE a.ong_id = :ong_id
                   AND a.excluido_em IS NULL
 
-                ORDER BY s.criado_em DESC
+                ORDER BY s.criado_em DESC\n                LIMIT :limit OFFSET :offset
             """),
             {
-                "ong_id": usuario["ong_id"]
+                "ong_id": usuario["ong_id"],
+                "limit": limit,
+                "offset": offset
             }
         ).mappings().all()
 

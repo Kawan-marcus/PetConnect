@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 
 from app.database import engine
@@ -18,6 +18,8 @@ router = APIRouter(
 
 @router.get("")
 def listar_favoritos(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
@@ -58,8 +60,9 @@ def listar_favoritos(
                 WHERE f.usuario_id = :usuario_id
 
                 ORDER BY f.criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
-            {"usuario_id": usuario_id}
+            {"usuario_id": usuario_id, "limit": limit, "offset": offset}
         ).mappings().all()
 
         resposta = []

@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from sqlalchemy import bindparam, text
@@ -66,6 +65,8 @@ def verificar_ong(conexao, usuario_id: int):
 
                 u.ong_id,
 
+                u.ativo,
+
                 o.nome AS ong_nome,
 
                 o.status AS ong_status
@@ -100,6 +101,9 @@ def verificar_ong(conexao, usuario_id: int):
 
         )
 
+    if not usuario["ativo"]:
+        raise HTTPException(status_code=401, detail="Conta desativada.")
+
     if usuario["perfil"] != "ong":
 
         raise HTTPException(
@@ -118,6 +122,12 @@ def verificar_ong(conexao, usuario_id: int):
 
             detail="Usuário não está vinculado a uma ONG."
 
+        )
+
+    if usuario.get("ong_status") != "aprovada":
+        raise HTTPException(
+            status_code=403,
+            detail="A ONG precisa estar aprovada e ativa para realizar esta operação."
         )
 
     return usuario
@@ -224,7 +234,7 @@ def solicitar_adocao(
 
             text("""
 
-                SELECT id, perfil
+                SELECT id, perfil, ativo
 
                 FROM usuario
 
@@ -250,6 +260,9 @@ def solicitar_adocao(
 
             )
 
+        if not usuario["ativo"]:
+            raise HTTPException(status_code=401, detail="Conta desativada.")
+
         if usuario["perfil"] != "adotante":
 
             raise HTTPException(
@@ -270,11 +283,11 @@ def solicitar_adocao(
 
             text("""
 
-                SELECT *
-
-                FROM animal
-
-                WHERE id = :animal_id
+                SELECT a.*, o.status AS ong_status
+                FROM animal a
+                INNER JOIN ong o ON o.id = a.ong_id
+                WHERE a.id = :animal_id
+                FOR UPDATE
 
             """),
 
@@ -296,17 +309,23 @@ def solicitar_adocao(
 
             )
 
-        # RN01:
+        if animal["excluido_em"] is not None:
+            raise HTTPException(status_code=404, detail="Animal não encontrado.")
 
-        # animal adotado não pode receber nova solicitação
+        if animal["ong_status"] != "aprovada":
+            raise HTTPException(status_code=409, detail="A ONG responsável não está aprovada.")
 
+        if animal["status"] != "disponivel":
+            raise HTTPException(status_code=409, detail="Este animal não está disponível para adoção.")
+
+        # RN01: animal adotado não pode receber nova solicitação
         if animal["status"] == "adotado":
 
             raise HTTPException(
 
                 status_code=409,
 
-                detail="Este animal já foi adotado."
+                detail="Este animal não está mais disponível para adoção."
 
             )
 
@@ -535,162 +554,115 @@ def solicitar_adocao(
 
 # ============================================================
 
+
+# ============================================================
+# GET /api/solicitacoes/minhas
+# Lista as solicitações do adotante logado
+# ============================================================
+
 @router.get("/minhas")
-
 def minhas_solicitacoes(
-
-    usuario_id: int = Depends(obter_usuario_id_token)
-
+    usuario_id: int = Depends(obter_usuario_id_token),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0)
 ):
-
     with engine.connect() as conexao:
 
         solicitacoes = conexao.execute(
-
             text("""
-
                 SELECT
-
                     s.id,
-
                     s.animal_id,
-
                     s.usuario_id,
-
                     s.status,
-
                     s.score,
-
                     s.mensagem,
-
                     s.motivo_recusa,
-
                     s.criado_em,
-
                     s.atualizado_em,
-
                     a.nome AS animal_nome,
-
                     a.especie AS animal_especie,
-
                     a.raca AS animal_raca,
-
                     a.status AS animal_status,
-
                     o.id AS ong_id,
-
                     o.nome AS ong_nome,
-
                     o.cidade AS ong_cidade,
-
                     o.telefone AS ong_telefone
-
                 FROM solicitacao s
-
                 INNER JOIN animal a
-
                     ON a.id = s.animal_id
-
                 INNER JOIN ong o
-
                     ON o.id = a.ong_id
-
                 WHERE s.usuario_id = :usuario_id
-
                 ORDER BY s.criado_em DESC
-
+                LIMIT :limit OFFSET :offset
             """),
-
             {
-
-                "usuario_id": usuario_id
-
+                "usuario_id": usuario_id,
+                "limit": limit,
+                "offset": offset
             }
-
         ).mappings().all()
 
-        historicos = buscar_historicos(conexao, [s["id"] for s in solicitacoes])
-
+        historicos = buscar_historicos(
+            conexao,
+            [s["id"] for s in solicitacoes]
+        )
 
         resposta = []
 
         for s in solicitacoes:
 
             fotos = conexao.execute(
-
                 text("""
-
                     SELECT url
-
                     FROM foto_animal
-
                     WHERE animal_id = :animal_id
-
                     ORDER BY ordem ASC
-
                 """),
-
                 {
-
                     "animal_id": s["animal_id"]
-
                 }
-
             ).scalars().all()
 
             resposta.append({
-
                 "id": s["id"],
-
                 "animalId": s["animal_id"],
-
                 "usuarioId": s["usuario_id"],
-
                 "status": s["status"],
-
                 "score": s["score"],
-
                 "mensagem": s["mensagem"],
-
                 "motivoRecusa": s["motivo_recusa"],
-
                 "criadoEm": s["criado_em"].isoformat(),
-
                 "atualizadoEm": s["atualizado_em"].isoformat(),
 
                 "animal": {
-
                     "id": s["animal_id"],
-
                     "nome": s["animal_nome"],
-
                     "especie": s["animal_especie"],
-
                     "raca": s["animal_raca"],
-
                     "status": s["animal_status"],
-
                     "fotos": list(fotos)
-
                 },
 
                 "ong": {
-
                     "id": s["ong_id"],
-
                     "nome": s["ong_nome"],
-
                     "cidade": s["ong_cidade"],
-
                     "telefone": s["ong_telefone"]
-
                 },
 
-                "historico": historicos.get(s["id"]) or [{"status": s["status"], "data": s["criado_em"].isoformat(), "obs": ""}]
-
+                "historico": historicos.get(s["id"]) or [
+                    {
+                        "status": s["status"],
+                        "data": s["criado_em"].isoformat(),
+                        "obs": ""
+                    }
+                ]
             })
 
     return resposta
+
 
 # ============================================================
 
@@ -1077,10 +1049,9 @@ def aprovar_solicitacao(
                     ON a.id = s.animal_id
 
                 WHERE s.id = :solicitacao_id
-
                   AND a.excluido_em IS NULL
-
                 LIMIT 1
+                FOR UPDATE
 
             """),
 
@@ -1154,7 +1125,7 @@ def aprovar_solicitacao(
 
         # ----------------------------------------------------
 
-        if solicitacao["animal_status"] == "adotado":
+        if solicitacao["animal_status"] != "disponivel":
 
             raise HTTPException(
 
@@ -1179,10 +1150,9 @@ def aprovar_solicitacao(
             text("""
 
                 UPDATE solicitacao
-
                 SET status = 'aprovada'
-
                 WHERE id = :solicitacao_id
+                  AND status IN ('pendente', 'em_analise')
 
             """),
 
@@ -1214,10 +1184,10 @@ def aprovar_solicitacao(
             text("""
 
                 UPDATE animal
-
                 SET status = 'em_processo'
-
                 WHERE id = :animal_id
+                  AND status = 'disponivel'
+                  AND excluido_em IS NULL
 
             """),
 
