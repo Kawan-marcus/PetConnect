@@ -29,6 +29,7 @@ import OngAnimalForm from './pages/ong/OngAnimalForm.jsx';
 import OngSolicitacoes from './pages/ong/OngSolicitacoes.jsx';
 import OngSolicitacaoDetalhe from './pages/ong/OngSolicitacaoDetalhe.jsx';
 import OngAcompanhamentos from './pages/ong/OngAcompanhamentos.jsx';
+import OngRelatorios from './pages/ong/OngRelatorios.jsx';
 
 // Admin
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
@@ -36,6 +37,10 @@ import AdminOngs from './pages/admin/AdminOngs.jsx';
 import AdminUsuarios from './pages/admin/AdminUsuarios.jsx';
 import AdminAnimais from './pages/admin/AdminAnimais.jsx';
 import AdminHistorico from './pages/admin/AdminHistorico.jsx';
+import AdminRelatorios from './pages/admin/AdminRelatorios.jsx';
+import AdminOperacoes from './pages/admin/AdminOperacoes.jsx';
+import AdminPesquisa from './pages/admin/AdminPesquisa.jsx';
+import AdminPermissoes from './pages/admin/AdminPermissoes.jsx';
 
 export default function App() {
   return (
@@ -75,6 +80,7 @@ export default function App() {
           <Route path="solicitacoes" element={<OngSolicitacoes />} />
           <Route path="solicitacoes/:id" element={<OngSolicitacaoDetalhe />} />
           <Route path="acompanhamentos" element={<OngAcompanhamentos />} />
+          <Route path="relatorios" element={<OngRelatorios />} />
         </Route>
 
         {/* Administrador */}
@@ -84,6 +90,10 @@ export default function App() {
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="animais" element={<AdminAnimais />} />
           <Route path="historico" element={<AdminHistorico />} />
+          <Route path="relatorios" element={<AdminRelatorios />} />
+          <Route path="operacoes" element={<AdminOperacoes />} />
+          <Route path="pesquisa" element={<AdminPesquisa />} />
+          <Route path="permissoes" element={<AdminPermissoes />} />
         </Route>
 
         <Route path="*" element={<NaoEncontrado />} />

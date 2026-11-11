@@ -38,13 +38,18 @@ const ROTAS = [
   { padrao: '/ong/solicitacoes', rotulo: 'Solicitações', pai: '/ong' },
   { padrao: '/ong/solicitacoes/:id', rotulo: 'Análise da solicitação', pai: '/ong/solicitacoes' },
   { padrao: '/ong/acompanhamentos', rotulo: 'Pós-adoção', pai: '/ong' },
+  { padrao: '/ong/relatorios', rotulo: 'Relatórios', pai: '/ong' },
 
   // Administrador
   { padrao: '/admin', rotulo: 'Dashboard' },
   { padrao: '/admin/ongs', rotulo: 'ONGs', pai: '/admin' },
   { padrao: '/admin/usuarios', rotulo: 'Usuários', pai: '/admin' },
   { padrao: '/admin/animais', rotulo: 'Animais', pai: '/admin' },
-  { padrao: '/admin/historico', rotulo: 'Histórico', pai: '/admin' },
+  { padrao: '/admin/historico', rotulo: 'Histórico de adoções', pai: '/admin' },
+  { padrao: '/admin/relatorios', rotulo: 'Relatórios', pai: '/admin' },
+  { padrao: '/admin/operacoes', rotulo: 'Histórico de operações', pai: '/admin' },
+  { padrao: '/admin/pesquisa', rotulo: 'Pesquisar', pai: '/admin' },
+  { padrao: '/admin/permissoes', rotulo: 'Permissões', pai: '/admin' },
 ];
 
 /** Páginas que não mostram a trilha (telas de entrada, sem hierarquia). */

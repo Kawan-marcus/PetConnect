@@ -26,13 +26,16 @@ const LINKS = {
     { to: '/ong/animais', rotulo: 'Meus animais' },
     { to: '/ong/solicitacoes', rotulo: 'Solicitações' },
     { to: '/ong/acompanhamentos', rotulo: 'Pós-adoção' },
+    { to: '/ong/relatorios', rotulo: 'Relatórios' },
   ],
   admin: [
     { to: '/admin', rotulo: 'Dashboard', end: true },
     { to: '/admin/ongs', rotulo: 'ONGs' },
     { to: '/admin/usuarios', rotulo: 'Usuários' },
     { to: '/admin/animais', rotulo: 'Animais' },
-    { to: '/admin/historico', rotulo: 'Histórico' },
+    { to: '/admin/relatorios', rotulo: 'Relatórios' },
+    { to: '/admin/historico', rotulo: 'Adoções' },
+    { to: '/admin/operacoes', rotulo: 'Operações' },
   ],
 };
 
@@ -116,6 +119,16 @@ function MenuUsuario({ usuario, onSair }) {
           <Link className="dropdown__item" to="/perfil" onClick={() => setAberto(false)}>
             <Icone nome="usuario" tamanho={16} /> Meu perfil
           </Link>
+          {usuario.perfil === 'admin' && (
+            <>
+              <Link className="dropdown__item" to="/admin/pesquisa" onClick={() => setAberto(false)}>
+                <Icone nome="busca" tamanho={16} /> Pesquisar
+              </Link>
+              <Link className="dropdown__item" to="/admin/permissoes" onClick={() => setAberto(false)}>
+                <Icone nome="escudo" tamanho={16} /> Permissões
+              </Link>
+            </>
+          )}
           {usuario.perfil === 'adotante' && (
             <Link className="dropdown__item" to="/formulario" onClick={() => setAberto(false)}>
               <Icone nome="formulario" tamanho={16} /> Formulário de avaliação
@@ -184,6 +197,12 @@ export default function Layout() {
             {usuario && (
               <div className="nav__extra" aria-label="Sua conta">
                 <NavLink to="/perfil" className="nav__link"><Icone nome="usuario" tamanho={18} /> Meu perfil</NavLink>
+                {usuario.perfil === 'admin' && (
+                  <>
+                    <NavLink to="/admin/pesquisa" className="nav__link"><Icone nome="busca" tamanho={18} /> Pesquisar</NavLink>
+                    <NavLink to="/admin/permissoes" className="nav__link"><Icone nome="escudo" tamanho={18} /> Permissões</NavLink>
+                  </>
+                )}
                 {usuario.perfil === 'adotante' && (
                   <NavLink to="/formulario" className="nav__link"><Icone nome="formulario" tamanho={18} /> Formulário de avaliação</NavLink>
                 )}

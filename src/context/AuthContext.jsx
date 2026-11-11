@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as authApi from '../api/auth.js';
 import { tokenStorage } from '../api/client.js';
+import { useToast } from './ToastContext.jsx';
 
 const AuthContext = createContext(null);
 
@@ -8,6 +9,11 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  // Sprint 08: quando o token vence (401), avisa o usuário em vez de só "sumir" com a sessão.
+  const [sessaoExpirada, setSessaoExpirada] = useState(false);
+  const toast = useToast();
+  const logado = useRef(false);
+  useEffect(() => { logado.current = !!usuario; }, [usuario]);
 
   const recarregar = useCallback(async () => {
     if (!tokenStorage.get()) {
@@ -27,14 +33,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     recarregar();
-    const sair = () => setUsuario(null);
+    const sair = () => {
+      if (logado.current) {
+        setSessaoExpirada(true);
+        toast?.('Sua sessão expirou. Entre novamente para continuar de onde parou.', 'erro');
+      }
+      setUsuario(null);
+    };
     window.addEventListener('adotapet:logout', sair);
     return () => window.removeEventListener('adotapet:logout', sair);
-  }, [recarregar]);
+  }, [recarregar, toast]);
 
   const entrar = useCallback(async ({ token }) => {
     tokenStorage.set(token);
     const u = await authApi.me();
+    setSessaoExpirada(false);
     setUsuario(u);
     return u;
   }, []);
@@ -47,8 +60,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const valor = useMemo(
-    () => ({ usuario, carregando, login, entrar, logout, recarregar }),
-    [usuario, carregando, login, entrar, logout, recarregar],
+    () => ({ usuario, carregando, sessaoExpirada, login, entrar, logout, recarregar }),
+    [usuario, carregando, sessaoExpirada, login, entrar, logout, recarregar],
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;

@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
 import { FavoritosProvider } from './context/FavoritosContext.jsx';
+import { ConfirmarProvider } from './context/ConfirmarContext.jsx';
 import './styles/global.css';
 
 // HashRouter (#/rota) só é usado se o site for publicado num servidor sem configuração de rotas.
@@ -16,7 +17,9 @@ createRoot(document.getElementById('root')).render(
       <ToastProvider>
         <AuthProvider>
           <FavoritosProvider>
-            <App />
+            <ConfirmarProvider>
+              <App />
+            </ConfirmarProvider>
           </FavoritosProvider>
         </AuthProvider>
       </ToastProvider>

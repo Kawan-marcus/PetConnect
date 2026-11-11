@@ -26,6 +26,25 @@ function exigirPerfil(...perfis) {
   return u;
 }
 
+/**
+ * Log de operações do mock (Sprint 07) — equivale à tabela log_acao do banco.
+ * As etapas das solicitações já saem do próprio histórico; aqui ficam as outras ações.
+ */
+function registrarLog(acao, entidade, entidadeId, descricao, quem) {
+  const d = db();
+  if (!d.logs) d.logs = [];
+  let autor = quem;
+  if (!autor) {
+    try { autor = usuarioAtual(); } catch { autor = null; }
+  }
+  d.logs.push({ id: `m${d.logs.length + 1}-${Date.now()}`, data: agora(), acao, entidade, entidadeId, descricao, quem: autor?.nome || 'Sistema (automático)', perfil: autor?.perfil || 'sistema' });
+}
+
+export async function listarLogs() {
+  exigirPerfil('admin');
+  return db().logs || [];
+}
+
 function notificar(usuarioId, texto, link) {
   const d = db();
   d.notificacoes.push({ id: proximoId(d.notificacoes), usuarioId, texto, link, lida: false, data: agora() });
@@ -56,7 +75,13 @@ export async function login(email, senha) {
   await atraso(400);
   const u = db().usuarios.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
   if (!u || u.senha !== senha) throw erro('E-mail ou senha inválidos.');
-  if (!u.ativo) throw erro('Usuário desativado. Entre em contato com o administrador.');
+  if (!u.ativo) {
+    registrarLog('auth.login_falhou', 'auth', u.id, `${u.email} · conta desativada`, u);
+    salvar();
+    throw erro('Usuário desativado. Entre em contato com o administrador.');
+  }
+  registrarLog('auth.login', 'auth', u.id, u.email, u);
+  salvar();
   return { token: `mock-${u.id}`, usuario: semSenha(u) };
 }
 
@@ -169,6 +194,12 @@ export async function atualizarAnimal(id, dados) {
   const a = db().animais.find((x) => x.id === Number(id));
   if (!a) throw erro('Animal não encontrado.');
   if (u.perfil === 'ong' && a.ongId !== u.ongId) throw erro('Este animal pertence a outra ONG.');
+  if (dados.status && dados.status !== a.status) {
+    regraStatusAnimal(a, dados.status);
+    registrarLog('animal.status', 'animal', a.id, `${a.nome} · ${a.status} → ${dados.status}`);
+  } else {
+    registrarLog('animal.editado', 'animal', a.id, a.nome);
+  }
   Object.assign(a, dados, { id: a.id, ongId: a.ongId });
   salvar();
   return a;
@@ -183,10 +214,26 @@ export async function removerAnimal(id) {
   if (d.solicitacoes.some((s) => s.animalId === a.id && ['pendente', 'em_analise', 'aprovada'].includes(s.status))) {
     throw erro('Não é possível remover um animal com solicitações em andamento.');
   }
+  registrarLog('animal.excluido', 'animal', a.id, `${a.nome}${u.perfil === 'admin' ? ' · removido pelo administrador' : ''}`);
   d.animais = d.animais.filter((x) => x.id !== a.id);
   d.favoritos = d.favoritos.filter((f) => f.animalId !== a.id);
   salvar();
   return { ok: true };
+}
+
+/**
+ * RN06 (revisada na Sprint 08): "adotado" só pela conclusão da adoção, e animal com
+ * adoção aprovada não volta para "disponível". Igual ao trigger trg_rn_animal_alteracao do banco.
+ */
+function regraStatusAnimal(a, novo) {
+  const d = db();
+  if (novo === 'adotado' && !d.solicitacoes.some((s) => s.animalId === a.id && s.status === 'concluida')) {
+    throw erro('O animal só fica "adotado" quando uma adoção é concluída. Conclua a adoção na tela da solicitação (RN06).');
+  }
+  if (a.status === 'adotado') throw erro('Animal adotado não volta para a lista de adoção (RN06).');
+  if (novo === 'disponivel' && d.solicitacoes.some((s) => s.animalId === a.id && s.status === 'aprovada')) {
+    throw erro('Há uma adoção aprovada para este animal: conclua ou trate a solicitação antes (RN06).');
+  }
 }
 
 export async function alterarStatusAnimal(id, status) {
@@ -233,7 +280,9 @@ export async function salvarFormulario(dados) {
   const u = exigirPerfil('adotante');
   const d = db();
   const novo = { ...dados, usuarioId: u.id, atualizadoEm: agora() };
+  const existia = d.formularios.some((f) => f.usuarioId === u.id);
   d.formularios = [...d.formularios.filter((f) => f.usuarioId !== u.id), novo];
+  registrarLog(existia ? 'formulario.atualizado' : 'formulario.preenchido', 'formulario', u.id, u.nome);
   salvar();
   return novo;
 }
@@ -385,6 +434,7 @@ export async function registrarAcompanhamento(solicitacaoId, dados) {
   const d = db();
   const a = { id: proximoId(d.acompanhamentos), solicitacaoId: s.id, animalId: s.animalId, data: dados.data || agora(), tipo: dados.tipo, observacao: dados.observacao };
   d.acompanhamentos.push(a);
+  registrarLog('acompanhamento.registrado', 'solicitacao', s.id, `#${s.id} · ${dados.tipo}`);
   salvar();
   return a;
 }
@@ -469,6 +519,7 @@ export async function atualizarUsuario(id, dados) {
   const admin = exigirPerfil('admin');
   const u = db().usuarios.find((x) => x.id === Number(id));
   if (u.id === admin.id && dados.ativo === false) throw erro('Você não pode desativar a si mesmo.');
+  if (dados.ativo !== undefined && dados.ativo !== u.ativo) registrarLog(dados.ativo ? 'usuario.ativado' : 'usuario.desativado', 'usuario', u.id, u.nome, admin);
   Object.assign(u, dados);
   salvar();
   return semSenha(u);
@@ -487,6 +538,7 @@ export async function alterarStatusOng(id, status) {
   await atraso(300);
   exigirPerfil('admin');
   const o = db().ongs.find((x) => x.id === Number(id));
+  if (o.status !== status) registrarLog(`ong.${status}`, 'ong', o.id, `${o.nome} · ${o.status} → ${status}`);
   o.status = status;
   const texto = status === 'aprovada' ? 'Sua ONG foi aprovada! Você já pode cadastrar animais.' : status === 'suspensa' ? 'Sua ONG foi suspensa pelo administrador.' : 'O status da sua ONG foi alterado.';
   notificarOng(o.id, texto, '/ong');
@@ -511,11 +563,9 @@ export async function estatisticas() {
     dt.setMonth(dt.getMonth() - i);
     meses.push({ chave: `${dt.getFullYear()}-${dt.getMonth()}`, rotulo: dt.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '') });
   }
-  // Histórico de exemplo + adoções reais do mock no mês correspondente.
-  const exemplo = [3, 5, 4, 7, 6, 0];
-  const porMes = meses.map((m, i) => ({
+  const porMes = meses.map((m) => ({
     mes: m.rotulo,
-    adocoes: exemplo[i] + concluidas.filter((s) => {
+    adocoes: concluidas.filter((s) => {
       const fim = new Date(s.historico.at(-1).data);
       return `${fim.getFullYear()}-${fim.getMonth()}` === m.chave;
     }).length,

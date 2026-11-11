@@ -9,6 +9,8 @@ import { useToast } from '../../context/ToastContext.jsx';
 import { useFormulario } from '../../hooks/useFormulario.js';
 import { atualizarPerfil } from '../../api/auth.js';
 import { PERFIS } from '../../utils/format.js';
+import Icone from '../../components/Icone.jsx';
+import { acoesDoPerfil, pode } from '../../utils/permissoes.js';
 
 export default function Perfil() {
   const { usuario, recarregar } = useAuth();
@@ -74,6 +76,23 @@ export default function Perfil() {
           <button className="btn btn--primario" disabled={enviando}>{enviando ? 'Salvando…' : 'Salvar alterações'}</button>
         </div>
       </form>
+
+      {/* Sprint 08: o usuário vê com clareza o que o perfil dele permite */}
+      <section className="card">
+        <h2><Icone nome="escudo" tamanho={18} /> O que você pode fazer</h2>
+        <p className="texto-suave">Seu perfil é <strong>{PERFIS[usuario.perfil]}</strong>. Estas são as funções liberadas para você:</p>
+        <ul className="lista-permissoes">
+          {acoesDoPerfil(usuario.perfil).map((a) => {
+            const { permitido, motivo } = pode(usuario, a.id);
+            return (
+              <li key={a.id} className={permitido ? '' : 'is-bloqueada'}>
+                <Icone nome={permitido ? 'check' : 'cadeado'} tamanho={16} />
+                <span>{a.rotulo}{a.observacao ? <span className="texto-suave"> — {a.observacao}</span> : null}{!permitido && <span className="bloco texto-suave">{motivo}</span>}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     </div>
   );
 }

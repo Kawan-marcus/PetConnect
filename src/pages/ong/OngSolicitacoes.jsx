@@ -6,6 +6,9 @@ import { StatusBadge } from '../../components/Badge.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
 import { solicitacoesDaOng } from '../../api/adocoes.js';
 import { formatarData, nivelScore } from '../../utils/format.js';
+import Icone from '../../components/Icone.jsx';
+import { useAtalhoBusca, useAtrasado } from '../../hooks/useTabela.js';
+import { contem } from '../../utils/relatorios.js';
 
 const ABAS = [
   ['abertas', 'Abertas'],
@@ -24,11 +27,15 @@ const FILTRO = {
 export default function OngSolicitacoes() {
   const [aba, setAba] = useState('abertas');
   const [ordem, setOrdem] = useState('score');
+  const [busca, setBusca] = useState('');
+  const termo = useAtrasado(busca);
+  const refBusca = useAtalhoBusca();
   const { dados, carregando, erro, recarregar } = useAsync(() => solicitacoesDaOng(), []);
 
   const filtrar = FILTRO[aba] || ((s) => !aba || s.status === aba);
   const lista = (dados || [])
     .filter(filtrar)
+    .filter((s) => contem(`${s.id} ${s.animal.nome} ${s.usuario.nome} ${s.usuario.cidade || ''}`, termo))
     .sort((a, b) => (ordem === 'score' ? b.score - a.score : b.criadoEm.localeCompare(a.criadoEm)));
 
   return (
@@ -44,6 +51,10 @@ export default function OngSolicitacoes() {
             </button>
           ))}
         </div>
+        <div className="input-icone">
+          <Icone nome="busca" tamanho={18} />
+          <input ref={refBusca} type="search" placeholder="Pesquisar animal ou adotante… (/)" value={busca} onChange={(e) => setBusca(e.target.value)} aria-label="Pesquisar solicitações" />
+        </div>
         <select value={ordem} onChange={(e) => setOrdem(e.target.value)} aria-label="Ordenar">
           <option value="score">Maior compatibilidade</option>
           <option value="data">Mais recentes</option>
@@ -54,7 +65,7 @@ export default function OngSolicitacoes() {
       {carregando ? (
         <Carregando />
       ) : lista.length === 0 ? (
-        <Vazio titulo="Nenhuma solicitação nesta aba" />
+        <Vazio titulo={termo ? `Nada encontrado para “${termo}”` : 'Nenhuma solicitação nesta aba'} texto={termo ? 'Confira a grafia ou procure em outra aba.' : undefined} />
       ) : (
         <div className="tabela-wrap">
           <table className="tabela tabela--clicavel">

@@ -9,6 +9,7 @@ import Icone from '../../components/Icone.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
 import { minhasSolicitacoes, cancelarSolicitacao } from '../../api/adocoes.js';
 import { useToast } from '../../context/ToastContext.jsx';
+import { useConfirmar } from '../../context/ConfirmarContext.jsx';
 import { formatarData } from '../../utils/format.js';
 
 const ATIVAS = ['pendente', 'em_analise', 'aprovada'];
@@ -18,9 +19,18 @@ export default function MinhasSolicitacoes() {
   const { dados, carregando, erro, recarregar } = useAsync(minhasSolicitacoes, []);
   const [aberta, setAberta] = useState(null);
   const toast = useToast();
+  const confirmar = useConfirmar();
 
   const cancelar = async (s) => {
-    if (!window.confirm(`Cancelar a solicitação para ${s.animal.nome}?`)) return;
+    const ok = await confirmar({
+      titulo: `Cancelar o pedido para ${s.animal.nome}?`,
+      mensagem: `A ONG ${s.ong.nome} deixa de analisar o seu pedido.`,
+      detalhe: 'Depois de cancelado, o pedido não pode ser reaberto. Se mudar de ideia, você pode enviar um novo enquanto o animal estiver disponível.',
+      acao: 'Cancelar pedido',
+      cancelar: 'Manter pedido',
+      perigo: true,
+    });
+    if (!ok) return;
     try {
       await cancelarSolicitacao(s.id);
       toast('Solicitação cancelada.');

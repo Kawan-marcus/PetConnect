@@ -50,7 +50,12 @@ export default function Login() {
           <p className="texto-suave">Bem-vindo de volta ao PetConnect.</p>
         </div>
 
-        {location.state?.de && !erro && (
+        {location.state?.motivo === 'expirada' && !erro && (
+          <p className="alerta alerta--aviso">
+            <Icone nome="relogio" tamanho={18} /> Sua sessão expirou por segurança. Entre de novo para voltar à página em que estava.
+          </p>
+        )}
+        {location.state?.de && location.state?.motivo !== 'expirada' && !erro && (
           <p className="alerta alerta--info">
             <Icone nome="cadeado" tamanho={18} /> Entre para continuar. Depois do login você volta para a página que tentou abrir.
           </p>
