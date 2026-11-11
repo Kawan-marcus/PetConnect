@@ -11,6 +11,10 @@ Banco da Plataforma de Adoção de Animais, alinhado com o front-end (`docs/CONT
 | `05_sprint06_modulo3.sql` | **Sprint 06:** tabelas do módulo 3 e de logs, views de integração, triggers e procedures. Não apaga dados e pode ser rodado de novo |
 | `06_massa_dados.sql` | **Sprint 06:** gera milhares de animais/adotantes fictícios para o teste de desempenho com OpenCL (invisíveis no site) |
 | `07_consultas_sprint06.sql` | **Sprint 06:** consultas de evidência do módulo 3, da integração e dos logs |
+| `08_sprint07_relatorios.sql` | **Sprint 07:** índices para filtros, views de relatório (`vw_rel_*`), procedures `sp_relatorio_periodo` e `sp_pesquisar`, mais operações no log |
+| `09_dados_demonstracao.sql` | **Sprint 07:** 6 meses de histórico de demonstração (adotantes `@demo.petconnect`, animais, pedidos com linha do tempo e logs com data). Apague com `CALL sp_limpar_historico_demo();` |
+| `10_sprint08_permissoes_regras.sql` | **Sprint 08:** usuário somente leitura para relatórios, log imutável e regras de negócio no banco (triggers RN01–RN08) |
+| `11_consultas_sprint07_08.sql` | **Sprint 08:** consultas de evidência (dashboard, relatórios, filtros, pesquisa, logs, permissões) e teste automático das regras |
 | `diagramas/mer_conceitual.png` | MER (modelo conceitual) |
 | `diagramas/modelo_relacional.png` | Modelo relacional (tabelas, PK, FK) |
 | `diagramas/*.mmd` | Fonte dos diagramas (Mermaid; o GitHub mostra como imagem) |
@@ -24,7 +28,7 @@ Banco da Plataforma de Adoção de Animais, alinhado com o front-end (`docs/CONT
 ### Opção 1: MySQL Workbench
 1. Abra a conexão local (normalmente `root@localhost`).
 2. **File → Open SQL Script** → `01_schema.sql` → clique no raio ⚡ para executar.
-3. Repita com `02_views.sql`, `03_seed.sql` e `05_sprint06_modulo3.sql`, nessa ordem.
+3. Repita com `02_views.sql`, `03_seed.sql`, `05_sprint06_modulo3.sql`, `08_sprint07_relatorios.sql`, `09_dados_demonstracao.sql` (opcional, para apresentação) e `10_sprint08_permissoes_regras.sql`, nessa ordem.
 4. Clique com o botão direito em **Schemas** → **Refresh All**. O banco `petconnect` aparece.
 
 ### Opção 2: XAMPP (phpMyAdmin)

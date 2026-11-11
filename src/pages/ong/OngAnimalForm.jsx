@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CabecalhoPagina } from '../../components/Layout.jsx';
 import Campo, { OpcoesPilula, SimNao } from '../../components/Campo.jsx';
 import Carregando, { Erro } from '../../components/Carregando.jsx';
 import Icone from '../../components/Icone.jsx';
-import { useFormulario } from '../../hooks/useFormulario.js';
+import { useFormulario, useAvisoSaida } from '../../hooks/useFormulario.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useConfirmar } from '../../context/ConfirmarContext.jsx';
+import { pode } from '../../utils/permissoes.js';
 import { obterAnimal, criarAnimal, atualizarAnimal, enviarFoto } from '../../api/animais.js';
 import { sugerirPorImagem } from '../../api/ia.js';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -78,6 +81,8 @@ export default function OngAnimalForm() {
   const editando = Boolean(id);
   const navigate = useNavigate();
   const toast = useToast();
+  const { usuario } = useAuth();
+  const confirmar = useConfirmar();
   const inputFoto = useRef(null);
   const [carregando, setCarregando] = useState(editando);
   const [erro, setErro] = useState(null);
@@ -86,6 +91,22 @@ export default function OngAnimalForm() {
   const [analisando, setAnalisando] = useState(false);
   const [sugestao, setSugestao] = useState(null);
   const f = useFormulario(VAZIO, validar);
+  useAvisoSaida(f.alterado);
+  const permissao = pode(usuario, 'animal.cadastrar');
+
+  const cancelar = async () => {
+    if (f.alterado) {
+      const ok = await confirmar({
+        titulo: 'Sair sem salvar?',
+        mensagem: 'As alterações feitas neste formulário serão perdidas.',
+        acao: 'Sair sem salvar',
+        cancelar: 'Continuar editando',
+        perigo: true,
+      });
+      if (!ok) return;
+    }
+    navigate('/ong/animais');
+  };
   const { valores: v, erros, set } = f;
 
   useEffect(() => {
@@ -148,6 +169,7 @@ export default function OngAnimalForm() {
       if (editando) await atualizarAnimal(id, dados);
       else await criarAnimal(dados);
       toast(editando ? 'Alterações salvas.' : `${dados.nome} foi publicado!`);
+      f.marcarSalvo();
       navigate('/ong/animais');
     } catch (e) {
       setErro(e);
@@ -158,6 +180,20 @@ export default function OngAnimalForm() {
   };
 
   if (carregando) return <Carregando />;
+
+  // Sprint 08 (RN04): ONG ainda não aprovada não chega ao formulário de cadastro pelo endereço direto.
+  if (!editando && !permissao.permitido) {
+    return (
+      <div className="container pagina pagina--estreita">
+        <div className="estado-pagina">
+          <div className="estado-pagina__icone estado-pagina__icone--aviso" aria-hidden="true"><Icone nome="relogio" tamanho={32} /></div>
+          <h1>Cadastro de animais bloqueado</h1>
+          <p className="texto-suave">{permissao.motivo} Assim que o administrador aprovar a ONG, você poderá publicar animais (RN04).</p>
+          <div className="estado-pagina__acoes"><Link to="/ong" className="btn btn--primario">Voltar ao painel</Link></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container pagina pagina--media">
@@ -252,7 +288,7 @@ export default function OngAnimalForm() {
         </section>
 
         <div className="form__acoes">
-          <button type="button" className="btn btn--fantasma" onClick={() => navigate('/ong/animais')}>Cancelar</button>
+          <button type="button" className="btn btn--fantasma" onClick={cancelar}>Cancelar</button>
           <button className="btn btn--primario btn--grande" disabled={enviando || subindo}>
             {enviando ? 'Salvando…' : editando ? 'Salvar alterações' : 'Publicar animal'}
           </button>

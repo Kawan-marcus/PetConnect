@@ -652,3 +652,133 @@ textarea { resize: vertical; min-height: 90px; }
   .alerta--com-acao .btn { margin-left: 0; width: 100%; justify-content: center; }
   .jornada .secao__topo .btn { width: 100%; white-space: normal; justify-content: center; text-align: center; }
 }
+
+/* ==========================================================================
+   Sprint 07 — dashboard, relatórios, pesquisa, filtros, exportação e logs
+   ========================================================================== */
+.filtros-relatorio { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); padding: 12px 16px; margin-bottom: 18px; box-shadow: var(--sombra); }
+.card .filtros-relatorio { box-shadow: none; background: var(--fundo); }
+.filtros-relatorio__titulo { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.85rem; color: var(--texto-suave); align-self: center; margin-right: 4px; }
+.filtros-relatorio__campo { display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.04em; }
+.filtros-relatorio__campo select, .filtros-relatorio__campo input { text-transform: none; letter-spacing: 0; font-size: 0.92rem; font-weight: 600; color: var(--texto); padding: 7px 10px; border: 1.5px solid var(--borda); border-radius: var(--raio-pequeno); background: var(--superficie); min-width: 150px; }
+
+.metricas + .eyebrow { margin-top: 4px; }
+
+.relatorio-tabela__topo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 12px; }
+.relatorio-tabela__busca { max-width: 420px; }
+.relatorio-tabela__total { font-size: 0.9rem; }
+.relatorio-tabela__exportar { display: flex; gap: 8px; margin-left: auto; }
+.relatorio-tabela__exportar .btn { padding: 7px 12px; }
+.input-icone .atalho { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+.atalho { font-family: inherit; font-size: 0.75rem; font-weight: 800; color: var(--texto-suave); border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; background: var(--fundo); }
+.input-icone--grande input { font-size: 1.1rem; padding-top: 14px; padding-bottom: 14px; }
+.input-icone--grande { margin-bottom: 18px; max-width: none; }
+
+.th-ordenar { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font: inherit; text-transform: inherit; letter-spacing: inherit; color: inherit; }
+.th-ordenar:focus-visible { outline: 3px solid color-mix(in srgb, var(--cor-primaria) 55%, transparent); border-radius: 4px; }
+.th-ordenar__seta { font-size: 0.7rem; opacity: 0.55; }
+th[aria-sort='ascending'] .th-ordenar__seta, th[aria-sort='descending'] .th-ordenar__seta { opacity: 1; color: var(--cor-primaria-escura); }
+th.direita .th-ordenar { flex-direction: row-reverse; }
+
+.paginacao { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
+.paginacao .btn { padding: 7px 12px; }
+
+.tabela-wrap--sem-borda { border: 0; box-shadow: none; border-radius: 0; }
+.texto-pequeno { font-size: 0.78rem; }
+
+.resumo-relatorio { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 0 0 16px; }
+.resumo-relatorio > div { background: var(--fundo); border: 1px solid var(--borda); border-radius: var(--raio-pequeno); padding: 10px 14px; }
+.resumo-relatorio dt { font-size: 0.78rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.04em; }
+.resumo-relatorio dd { margin: 2px 0 0; font-size: 1.35rem; font-weight: 800; }
+
+/* Página de relatórios: menu à esquerda, relatório à direita */
+.relatorios { display: grid; grid-template-columns: 270px 1fr; gap: 18px; align-items: start; }
+.relatorios__menu { display: flex; flex-direction: column; gap: 6px; position: sticky; top: 84px; }
+.relatorios__item { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--raio-pequeno); border: 1px solid transparent; font-size: 0.92rem; }
+.relatorios__item .texto-suave { font-size: 0.8rem; line-height: 1.35; }
+.relatorios__item:hover { background: var(--superficie); border-color: var(--borda); }
+.relatorios__item.is-ativo { background: var(--superficie); border-color: var(--cor-primaria); box-shadow: var(--sombra); }
+.relatorios__item:focus-visible { outline: 3px solid color-mix(in srgb, var(--cor-primaria) 55%, transparent); }
+.relatorios__conteudo { min-width: 0; }
+.relatorio__cabecalho { margin-bottom: 14px; }
+
+/* Gráfico de colunas por mês, duas séries */
+.legenda__cor--s1 { background: var(--serie-1); }
+.legenda__cor--s2 { background: var(--serie-2); }
+.grafico-mensal { display: flex; align-items: stretch; gap: 8px; height: 220px; padding-top: 8px; }
+.grafico-mensal__mes { flex: 1; display: flex; flex-direction: column; position: relative; outline: none; min-width: 0; }
+.grafico-mensal__barras { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 2px; border-bottom: 1px solid var(--borda); }
+.grafico-mensal__barra { width: 100%; max-width: 22px; min-height: 2px; border-radius: 4px 4px 0 0; transition: opacity 0.15s; }
+.grafico-mensal__barra--s1 { background: var(--serie-1); }
+.grafico-mensal__barra--s2 { background: var(--serie-2); }
+.grafico-mensal__rotulo { font-size: 0.78rem; color: var(--texto-suave); margin-top: 6px; text-align: center; text-transform: capitalize; white-space: nowrap; }
+.grafico-mensal:hover .grafico-mensal__barra { opacity: 0.45; }
+.grafico-mensal__mes:hover .grafico-mensal__barra, .grafico-mensal__mes:focus .grafico-mensal__barra { opacity: 1; }
+.grafico-mensal__mes:hover .tooltip, .grafico-mensal__mes:focus .tooltip { opacity: 1; }
+.grafico-mensal .tooltip { bottom: auto; top: 0; text-align: left; line-height: 1.4; }
+.grafico-mensal--denso .grafico-mensal__rotulo { font-size: 0.7rem; }
+
+/* Barras horizontais com valor escrito ao lado */
+.barras-h { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 10px; }
+.barras-h__item { display: grid; grid-template-columns: minmax(110px, 38%) 1fr auto; align-items: center; gap: 10px; position: relative; outline: none; font-size: 0.9rem; }
+.barras-h__rotulo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barras-h__trilho { height: 14px; background: var(--superficie-2); border-radius: 4px; overflow: hidden; }
+.barras-h__barra { display: block; height: 100%; background: var(--serie-1); border-radius: 4px; transition: opacity 0.15s; }
+.barras-h__valor { font-weight: 800; min-width: 3.2em; text-align: right; }
+.barras-h__item .tooltip { bottom: calc(100% + 2px); }
+.barras-h__item:hover .tooltip, .barras-h__item:focus .tooltip { opacity: 1; }
+
+.grade-operacoes { display: grid; grid-template-columns: 1fr 280px; gap: 18px; align-items: start; }
+.pesquisa__grupo h2 { display: flex; align-items: center; gap: 8px; }
+.pesquisa__dica { margin-top: 40px; }
+
+/* ==========================================================================
+   Sprint 08 — permissões e usabilidade
+   ========================================================================== */
+.confirmar { display: flex; gap: 14px; align-items: flex-start; }
+.confirmar p:last-child { margin-bottom: 0; }
+.confirmar__icone { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--vermelho-claro); color: var(--vermelho); }
+
+.tabela-permissoes td.permissao { vertical-align: middle; }
+.permissao--sim { color: var(--verde); }
+.permissao--nao { color: var(--texto-suave); opacity: 0.6; }
+.permissao__obs { display: block; font-size: 0.72rem; color: var(--texto-suave); line-height: 1.25; margin-top: 2px; }
+.tabela-permissoes__grupo th { background: var(--superficie-2); color: var(--texto); }
+.lista-permissoes, .lista-exemplos { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.lista-permissoes li { display: flex; gap: 10px; align-items: flex-start; }
+.lista-permissoes li .icone { color: var(--verde); margin-top: 3px; flex: none; }
+.lista-permissoes li.is-bloqueada .icone { color: var(--amarelo); }
+.lista-exemplos li { padding: 10px 14px; background: var(--fundo); border-radius: var(--raio-pequeno); border-left: 4px solid var(--cor-primaria); }
+.select-status:disabled { opacity: 1; cursor: not-allowed; }
+button:disabled[title] { cursor: not-allowed; }
+
+.so-imprimir { display: none; }
+
+@media (max-width: 1000px) {
+  .relatorios { grid-template-columns: 1fr; }
+  .relatorios__menu { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .relatorios__item { flex: none; max-width: 220px; }
+  .relatorios__item .texto-suave { display: none; }
+  .grade-operacoes { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .filtros-relatorio__campo { flex: 1 1 140px; }
+  .filtros-relatorio__campo select, .filtros-relatorio__campo input { min-width: 0; width: 100%; }
+  .relatorio-tabela__exportar { margin-left: 0; }
+  .grafico-mensal { gap: 3px; }
+  .barras-h__item { grid-template-columns: 1fr auto; }
+  .barras-h__trilho { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* Impressão / "Salvar como PDF": só o conteúdo do relatório */
+@media print {
+  .topo, .rodape, .faixa-mock, .trilha, .toasts, .nao-imprimir, .pular-conteudo, .cabecalho-pagina__acoes, .paginacao, .tabela-dados, .relatorio-tabela .tabela-wrap { display: none !important; }
+  .so-imprimir { display: block !important; }
+  body { background: #fff; font-size: 11pt; }
+  .card, .tabela-wrap, .metrica, .filtros-relatorio { box-shadow: none !important; border-color: #ccc !important; }
+  .container { max-width: none; padding: 0; }
+  .relatorios { display: block; }
+  .tabela th, .tabela td { padding: 4px 6px; font-size: 9pt; }
+  .tabela tr { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+}

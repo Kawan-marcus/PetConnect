@@ -10,13 +10,14 @@ import AcessoRestrito from '../pages/publico/AcessoRestrito.jsx';
  * Sprint 06:
  *  - guarda o caminho completo (com ?filtros) para voltar exatamente ao mesmo lugar depois do login;
  *  - perfil errado agora vê uma tela explicando o motivo (antes era redirecionado sem aviso).
+ * Sprint 08: se a sessão expirou (401), o login explica isso e devolve para a mesma página.
  */
 export default function RotaProtegida({ perfis }) {
-  const { usuario, carregando } = useAuth();
+  const { usuario, carregando, sessaoExpirada } = useAuth();
   const location = useLocation();
 
   if (carregando) return <Carregando />;
-  if (!usuario) return <Navigate to="/login" replace state={{ de: location.pathname + location.search, motivo: 'login' }} />;
+  if (!usuario) return <Navigate to="/login" replace state={{ de: location.pathname + location.search, motivo: sessaoExpirada ? 'expirada' : 'login' }} />;
   if (perfis && !perfis.includes(usuario.perfil)) return <AcessoRestrito perfisPermitidos={perfis} />;
   return <Outlet />;
 }

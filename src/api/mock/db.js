@@ -5,7 +5,8 @@
  */
 import { ilustracaoAnimal } from '../../utils/placeholder.js';
 
-const CHAVE = 'adotapet.mockdb.v1';
+// v2 (Sprint 07): inclui seis meses de histórico de demonstração para o dashboard e os relatórios.
+const CHAVE = 'adotapet.mockdb.v2';
 
 const dias = (n) => new Date(Date.now() - n * 86400000).toISOString();
 
@@ -84,7 +85,101 @@ function seed() {
     { id: 4, usuarioId: 1, texto: 'Nova ONG aguardando aprovação: Amigos de Quatro Patas.', link: '/admin/ongs', lida: false, data: dias(2) },
   ];
 
-  return { ongs, usuarios, animais, formularios, solicitacoes, acompanhamentos, favoritos, notificacoes };
+  historicoDemonstracao({ usuarios, animais, formularios, solicitacoes, acompanhamentos });
+
+  return { ongs, usuarios, animais, formularios, solicitacoes, acompanhamentos, favoritos, notificacoes, logs: [] };
+}
+
+/**
+ * Seis meses de uso "passado" (Sprint 07), igual ao script database/09_dados_demonstracao.sql:
+ * adotantes, animais e solicitações com toda a linha do tempo, para o dashboard ter tendência.
+ * Sorteio determinístico: todo mundo vê os mesmos números.
+ */
+function historicoDemonstracao({ usuarios, animais, formularios, solicitacoes, acompanhamentos }) {
+  let semente = 20262;
+  const sortear = () => {
+    semente = (semente * 1103515245 + 12345) % 2147483648;
+    return semente / 2147483648;
+  };
+  const inteiro = (min, max) => min + Math.floor(sortear() * (max - min + 1));
+  const escolher = (lista) => lista[Math.floor(sortear() * lista.length)];
+  const emDias = (d, h = 0) => new Date(Date.now() - d * 86400000 + h * 3600000).toISOString();
+
+  const nomes = ['Bruno Dias', 'Camila Rocha', 'Diego Martins', 'Elisa Gomes', 'Felipe Nunes', 'Gabriela Lima', 'Hugo Teixeira', 'Isabela Cardoso', 'João Pereira', 'Larissa Vieira', 'Marcos Ribeiro', 'Natália Santos', 'Otávio Barbosa', 'Paula Ferreira'];
+  const cidades = ['Goiânia - GO', 'Anápolis - GO', 'Aparecida de Goiânia - GO', 'Trindade - GO'];
+  const novosAdotantes = nomes.map((nome, i) => {
+    const id = 100 + i;
+    const criado = inteiro(20, 190);
+    usuarios.push({ id, nome, email: `${nome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}@demo.petconnect`, senha: '123456', perfil: 'adotante', telefone: '', cidade: escolher(cidades), ativo: i !== 9, criadoEm: emDias(criado) });
+    formularios.push({ usuarioId: id, tipoMoradia: escolher(['casa', 'apartamento']), temQuintal: sortear() < 0.5, telaProtecao: sortear() < 0.5, pessoasCasa: inteiro(1, 5), temCriancas: sortear() < 0.4, outrosAnimais: sortear() < 0.4, horasSozinho: inteiro(1, 10), experiencia: escolher(['nenhuma', 'alguma', 'muita']), nivelAtividade: escolher(['baixo', 'medio', 'alto']), motivacao: 'Quero dar um lar com carinho e responsabilidade.', atualizadoEm: emDias(criado - 1) });
+    return { id, criado };
+  });
+
+  const base = [
+    ['Caramelo', 'cao', 'Vira-lata', 'medio'], ['Estrela', 'gato', 'SRD', 'pequeno'], ['Dengo', 'cao', 'Poodle', 'pequeno'],
+    ['Faísca', 'cao', 'Border Collie', 'medio'], ['Jade', 'gato', 'Siamês', 'pequeno'], ['Kiara', 'cao', 'Labrador', 'grande'],
+    ['Oreo', 'gato', 'SRD', 'pequeno'], ['Quindim', 'cao', 'Vira-lata', 'medio'], ['Romeu', 'gato', 'Persa', 'pequeno'],
+    ['Simba', 'gato', 'SRD', 'medio'], ['Xodó', 'cao', 'Shih-tzu', 'pequeno'], ['Biscoito', 'cao', 'Vira-lata', 'grande'],
+    ['Cacau', 'cao', 'Pinscher', 'pequeno'], ['Pandora', 'gato', 'SRD', 'pequeno'], ['Rex', 'cao', 'Pastor Alemão', 'grande'],
+    ['Sushi', 'gato', 'Siamês', 'pequeno'], ['Uva', 'cao', 'Caramelo', 'medio'], ['Zeca', 'cao', 'Vira-lata', 'medio'],
+  ];
+  let idSol = 100;
+  let idAcomp = 100;
+  base.forEach(([nome, especie, raca, porte], i) => {
+    const id = 100 + i;
+    const ongId = 1 + (i % 2);
+    const criado = inteiro(15, 180);
+    const animal = {
+      id, ongId, nome, especie, raca, idadeMeses: inteiro(3, 96), sexo: i % 2 ? 'F' : 'M', porte, energia: escolher(['baixa', 'media', 'alta']),
+      convivenciaCriancas: sortear() < 0.7, convivenciaAnimais: sortear() < 0.6, castrado: true, vacinado: true,
+      descricao: 'Resgatado, carinhoso e pronto para uma família.', fotos: fotos(especie, id), status: 'disponivel', criadoEm: emDias(criado),
+    };
+    animais.push(animal);
+
+    const pedidos = sortear() < 0.12 ? 0 : inteiro(1, 3);
+    const inicio = criado - inteiro(1, 5);
+    const r = sortear();
+    let destino = r < 0.45 ? 'concluida' : r < 0.55 ? 'aprovada' : r < 0.75 ? 'recusada' : r < 0.85 ? 'cancelada' : r < 0.93 ? 'em_analise' : 'pendente';
+    const dAprov = inicio - inteiro(4, 8);
+    const dConcl = dAprov - inteiro(3, 14);
+    if (destino === 'concluida' && dConcl < 1) destino = 'aprovada';
+    if (destino === 'aprovada' && dAprov < 1) destino = 'em_analise';
+
+    const usados = new Set();
+    for (let k = 0; k < pedidos; k++) {
+      let adotante = escolher(novosAdotantes);
+      while (usados.has(adotante.id)) adotante = escolher(novosAdotantes);
+      usados.add(adotante.id);
+      const dCriado = inicio - k;
+      if (dCriado < 1) continue;
+      const vencedor = k === 0;
+      let status = vencedor ? destino : (['aprovada', 'concluida'].includes(destino) ? 'encerrada' : escolher(['recusada', 'cancelada', 'em_analise', 'pendente']));
+      const dAnalise = dCriado - 1;
+      const dFim = status === 'encerrada' ? dAprov : dCriado - inteiro(1, 4);
+      if (['recusada', 'cancelada'].includes(status) && dFim < 1) status = 'pendente';
+      if (status === 'em_analise' && dAnalise < 1) status = 'pendente';
+      // Pedido antigo não fica aberto para sempre: o adotante desistiu
+      if (['pendente', 'em_analise'].includes(status) && dCriado > 45) status = 'cancelada';
+      const score = ['aprovada', 'concluida'].includes(status) ? inteiro(70, 96) : status === 'recusada' ? inteiro(22, 57) : inteiro(45, 90);
+      const motivo = escolher(['Moradia sem tela de proteção para o animal.', 'O animal precisa de mais espaço e companhia durante o dia.', 'Perfil de energia incompatível com a rotina informada.']);
+      const historico = [{ status: 'pendente', data: emDias(dCriado), obs: '' }];
+      if (['em_analise', 'aprovada', 'concluida'].includes(status) || (status === 'recusada' && score % 2 === 0)) historico.push({ status: 'em_analise', data: emDias(dAnalise, 3), obs: '' });
+      if (['aprovada', 'concluida'].includes(status)) historico.push({ status: 'aprovada', data: emDias(dAprov, 5), obs: 'Visita realizada com sucesso.' });
+      if (status === 'concluida') historico.push({ status: 'concluida', data: emDias(dConcl, 6), obs: 'Termo de adoção assinado.' });
+      if (status === 'recusada') historico.push({ status: 'recusada', data: emDias(dFim, 4), obs: motivo });
+      if (status === 'cancelada') historico.push({ status: 'cancelada', data: emDias(dFim, 2), obs: 'Cancelada pelo adotante.' });
+      if (status === 'encerrada') historico.push({ status: 'encerrada', data: emDias(dAprov, 5), obs: 'Outra solicitação foi aprovada para este animal.' });
+      const sol = { id: idSol++, animalId: id, usuarioId: adotante.id, ongId, status, score, criadoEm: emDias(dCriado), historico };
+      if (status === 'recusada') sol.motivoRecusa = motivo;
+      solicitacoes.push(sol);
+      if (vencedor && status === 'concluida') {
+        animal.status = 'adotado';
+        if (dConcl - 7 > 0) acompanhamentos.push({ id: idAcomp++, solicitacaoId: sol.id, animalId: id, tipo: 'visita', data: emDias(dConcl - 7), observacao: 'Visita feita: animal adaptado e bem cuidado.' });
+        if (dConcl - 30 > 0) acompanhamentos.push({ id: idAcomp++, solicitacaoId: sol.id, animalId: id, tipo: 'contato', data: emDias(dConcl - 30), observacao: 'Contato por telefone: tudo certo, vacinas em dia.' });
+      }
+      if (vencedor && status === 'aprovada') animal.status = 'em_processo';
+    }
+  });
 }
 
 let cache = null;

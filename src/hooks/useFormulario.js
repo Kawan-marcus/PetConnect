@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Formulário controlado com validação simples.
@@ -10,10 +10,13 @@ export function useFormulario(inicial, validar = () => ({})) {
   const [valores, setValores] = useState(inicial);
   const [erros, setErros] = useState({});
   const [tocado, setTocado] = useState(false);
+  // Sprint 08: sabe se o usuário mudou algo, para avisar antes de sair sem salvar.
+  const [alterado, setAlterado] = useState(false);
 
   const limpar = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v));
 
   const set = (nome, valor) => {
+    setAlterado(true);
     setValores((v) => {
       const novo = { ...v, [nome]: valor };
       if (tocado) setErros(limpar(validar(novo)));
@@ -44,7 +47,23 @@ export function useFormulario(inicial, validar = () => ({})) {
     primeiro?.focus?.();
   };
 
-  return { valores, setValores, set, campo, erros, enviar };
+  return { valores, setValores, set, campo, erros, enviar, alterado, marcarSalvo: () => setAlterado(false) };
+}
+
+/**
+ * Avisa antes de fechar ou recarregar a aba com alterações não salvas (Sprint 08).
+ *   useAvisoSaida(f.alterado);
+ */
+export function useAvisoSaida(ativo) {
+  useEffect(() => {
+    if (!ativo) return undefined;
+    const aviso = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', aviso);
+    return () => window.removeEventListener('beforeunload', aviso);
+  }, [ativo]);
 }
 
 export const validadores = {

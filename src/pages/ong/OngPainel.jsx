@@ -8,6 +8,10 @@ import { listarAnimaisDaOng } from '../../api/animais.js';
 import { solicitacoesDaOng } from '../../api/adocoes.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { tempoRelativo } from '../../utils/format.js';
+import FiltrosRelatorio from '../../components/Filtros.jsx';
+import { ColunasMensais } from '../../components/Graficos.jsx';
+import { useFiltrosSalvos } from '../../hooks/useTabela.js';
+import { enriquecer, filtrarSolicitacoes, indicadores, seriePorMes, descreverPeriodo, fmtPct, fmtDias, fmtNumero } from '../../utils/relatorios.js';
 
 export function Metrica({ rotulo, valor, detalhe, tom }) {
   return (
@@ -22,6 +26,7 @@ export function Metrica({ rotulo, valor, detalhe, tom }) {
 export default function OngPainel() {
   const { usuario } = useAuth();
   const aprovada = usuario.ong?.status === 'aprovada';
+  const [filtros, alterar, limpar] = useFiltrosSalvos('ong-painel', { periodo: '180', de: '', ate: '', especie: '' });
   const { dados, carregando, erro } = useAsync(async () => {
     const [animais, solicitacoes] = await Promise.all([listarAnimaisDaOng(), solicitacoesDaOng()]);
     return { animais, solicitacoes };
@@ -30,6 +35,10 @@ export default function OngPainel() {
   if (carregando) return <Carregando />;
   const { animais = [], solicitacoes = [] } = dados || {};
   const pendentes = solicitacoes.filter((s) => ['pendente', 'em_analise'].includes(s.status));
+  const linhas = enriquecer(solicitacoes, animais);
+  const doPeriodo = filtrarSolicitacoes(linhas, filtros);
+  const ind = indicadores(doPeriodo);
+  const adocoes = filtrarSolicitacoes(linhas.filter((s) => s.concluidaEm), filtros, 'concluidaEm');
 
   return (
     <div className="container pagina">
@@ -55,6 +64,24 @@ export default function OngPainel() {
         <Metrica rotulo="Adotados" valor={animais.filter((a) => a.status === 'adotado').length} tom="verde" />
         <Metrica rotulo="Solicitações abertas" valor={pendentes.length} tom="primaria" />
       </div>
+
+      <section className="card">
+        <div className="secao__topo">
+          <div>
+            <h2>Desempenho da ONG</h2>
+            <p className="texto-suave">{descreverPeriodo(filtros)}</p>
+          </div>
+          <Link to="/ong/relatorios" className="btn btn--link">Relatórios <Icone nome="seta" tamanho={16} /></Link>
+        </div>
+        <FiltrosRelatorio filtros={filtros} alterar={alterar} limpar={limpar} campos={['periodo', 'especie']} />
+        <dl className="resumo-relatorio">
+          <div><dt>Pedidos recebidos</dt><dd>{fmtNumero(ind.total)}</dd></div>
+          <div><dt>Adoções concluídas</dt><dd>{fmtNumero(adocoes.length)}</dd></div>
+          <div><dt>Taxa de aprovação</dt><dd>{fmtPct(ind.taxaAprovacao)}</dd></div>
+          <div><dt>Tempo médio até a adoção</dt><dd>{fmtDias(indicadores(adocoes).tempoMedio)}</dd></div>
+        </dl>
+        <ColunasMensais dados={seriePorMes(linhas, filtros)} series={[{ chave: 'recebidas', rotulo: 'Pedidos recebidos' }, { chave: 'concluidas', rotulo: 'Adoções concluídas' }]} />
+      </section>
 
       <section className="card">
         <div className="secao__topo">

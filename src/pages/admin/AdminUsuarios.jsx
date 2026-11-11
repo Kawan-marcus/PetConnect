@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CabecalhoPagina } from '../../components/Layout.jsx';
 import Carregando, { Erro, Vazio } from '../../components/Carregando.jsx';
 import Badge from '../../components/Badge.jsx';
@@ -6,13 +7,25 @@ import Icone from '../../components/Icone.jsx';
 import { useAsync } from '../../hooks/useAsync.js';
 import { listarUsuarios, atualizarUsuario } from '../../api/admin.js';
 import { useToast } from '../../context/ToastContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useConfirmar } from '../../context/ConfirmarContext.jsx';
+import { useAtalhoBusca } from '../../hooks/useTabela.js';
+import { pode } from '../../utils/permissoes.js';
 import { PERFIS, formatarData } from '../../utils/format.js';
 
-/** RF17: gerenciamento de usuários. */
+/**
+ * RF17: gerenciamento de usuários.
+ * Sprint 08: o administrador não consegue desativar a própria conta (botão desabilitado com o motivo)
+ * e a desativação pede confirmação explicando o efeito.
+ */
 export default function AdminUsuarios() {
   const toast = useToast();
+  const { usuario: eu } = useAuth();
+  const confirmar = useConfirmar();
+  const [params] = useSearchParams();
+  const refBusca = useAtalhoBusca();
   const [perfil, setPerfil] = useState('');
-  const [busca, setBusca] = useState('');
+  const [busca, setBusca] = useState(params.get('busca') || '');
   const [buscaAtiva, setBuscaAtiva] = useState('');
   useEffect(() => {
     const t = setTimeout(() => setBuscaAtiva(busca), 300);
@@ -22,6 +35,16 @@ export default function AdminUsuarios() {
   const { dados, carregando, erro, recarregar, setDados } = useAsync(() => listarUsuarios({ perfil, busca: buscaAtiva }), [perfil, buscaAtiva]);
 
   const alternarAtivo = async (u) => {
+    if (u.ativo) {
+      const ok = await confirmar({
+        titulo: `Desativar ${u.nome}?`,
+        mensagem: `${u.nome} não vai mais conseguir entrar no PetConnect.`,
+        detalhe: 'Os dados e o histórico da conta são mantidos. Você pode reativar quando quiser.',
+        acao: 'Desativar conta',
+        perigo: true,
+      });
+      if (!ok) return;
+    }
     try {
       const novo = await atualizarUsuario(u.id, { ativo: !u.ativo });
       setDados((l) => l.map((x) => (x.id === u.id ? { ...x, ...novo } : x)));
@@ -37,7 +60,7 @@ export default function AdminUsuarios() {
       <div className="barra-busca">
         <div className="input-icone">
           <Icone nome="busca" tamanho={18} />
-          <input type="search" placeholder="Buscar por nome ou e-mail…" value={busca} onChange={(e) => setBusca(e.target.value)} aria-label="Buscar usuários" />
+           <input ref={refBusca} type="search" placeholder="Buscar por nome ou e-mail… (atalho: /)" value={busca} onChange={(e) => setBusca(e.target.value)} aria-label="Buscar usuários" />
         </div>
         <select value={perfil} onChange={(e) => setPerfil(e.target.value)} aria-label="Filtrar por perfil">
           <option value="">Todos os perfis</option>
@@ -58,9 +81,15 @@ export default function AdminUsuarios() {
                   <td className="texto-suave">{formatarData(u.criadoEm)}</td>
                   <td>{u.ativo ? <Badge tom="verde">Ativo</Badge> : <Badge tom="vermelho">Desativado</Badge>}</td>
                   <td className="direita">
-                    <button className={`btn ${u.ativo ? 'btn--perigo-suave' : 'btn--fantasma'}`} onClick={() => alternarAtivo(u)}>
-                      {u.ativo ? 'Desativar' : 'Reativar'}
-                    </button>
+                    {(() => {
+                      const { permitido, motivo } = pode(eu, 'usuario.ativar', { alvo: u });
+                      return (
+                        <button className={`btn ${u.ativo ? 'btn--perigo-suave' : 'btn--fantasma'}`} onClick={() => alternarAtivo(u)} disabled={!permitido} title={motivo || undefined}>
+                          {u.ativo ? 'Desativar' : 'Reativar'}
+                        </button>
+                      );
+                    })()}
+                    {u.id === eu?.id && <span className="texto-suave bloco texto-pequeno">Sua conta</span>}
                   </td>
                 </tr>
               ))}

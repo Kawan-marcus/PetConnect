@@ -4,7 +4,7 @@ import { CabecalhoPagina } from '../../components/Layout.jsx';
 import Campo, { OpcoesPilula, SimNao } from '../../components/Campo.jsx';
 import Carregando, { Erro } from '../../components/Carregando.jsx';
 import Icone from '../../components/Icone.jsx';
-import { useFormulario } from '../../hooks/useFormulario.js';
+import { useFormulario, useAvisoSaida } from '../../hooks/useFormulario.js';
 import { obterFormulario, salvarFormulario } from '../../api/adocoes.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { formatarData } from '../../utils/format.js';
@@ -42,6 +42,7 @@ export default function FormularioAvaliacao() {
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const f = useFormulario(VAZIO, validar);
+  useAvisoSaida(f.alterado); // Sprint 08: avisa antes de fechar a aba com respostas não salvas
 
   useEffect(() => {
     obterFormulario()
@@ -62,6 +63,7 @@ export default function FormularioAvaliacao() {
     setEnviando(true);
     try {
       await salvarFormulario(v);
+      f.marcarSalvo();
       toast('Formulário salvo! Sua compatibilidade foi atualizada.');
       navigate(location.state?.voltarPara || '/recomendados');
     } catch (e) {
