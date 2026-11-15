@@ -25,6 +25,10 @@
 
 USE petconnect;
 
+-- O MySQL Workbench vem com o "safe update mode" ligado, que bloqueia UPDATE/DELETE
+-- sem chave no WHERE (erro 1175). As procedures abaixo desligam isso só durante a execução.
+SET SQL_SAFE_UPDATES = 0;
+
 DROP PROCEDURE IF EXISTS sp_gerar_historico_demo;
 DROP PROCEDURE IF EXISTS sp_limpar_historico_demo;
 
@@ -51,6 +55,7 @@ BEGIN
   IF v_ong1 IS NULL THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'É preciso ao menos uma ONG aprovada (rode o 03_seed.sql).';
   END IF;
+  SET SQL_SAFE_UPDATES = 0;
   SET @demo_dias = p_meses * 30;
   SET @demo_animais = p_animais;
   SET @demo_adotantes = p_adotantes;
@@ -259,13 +264,20 @@ BEGIN
   WHERE t.status IN ('recusada', 'cancelada', 'encerrada');
 
   -- Status do animal acompanha o pedido vencedor
+  -- (o MySQL não deixa usar a mesma tabela temporária duas vezes no mesmo comando,
+  --  por isso as datas vão antes para uma tabela auxiliar)
+  DROP TEMPORARY TABLE IF EXISTS tmp_demo_fim;
+  CREATE TEMPORARY TABLE tmp_demo_fim (animal_id INT UNSIGNED NOT NULL, destino VARCHAR(20) NOT NULL, data_fim DATETIME NOT NULL);
+  INSERT INTO tmp_demo_fim (animal_id, destino, data_fim)
+  SELECT animal_id, destino, IF(destino = 'concluida', d_concl, d_aprov)
+  FROM tmp_demo_animal WHERE destino IN ('concluida', 'aprovada');
   UPDATE animal a
   SET a.status = 'adotado',
-      a.atualizado_em = (SELECT t.d_concl FROM tmp_demo_animal t WHERE t.animal_id = a.id)
+      a.atualizado_em = (SELECT f.data_fim FROM tmp_demo_fim f WHERE f.animal_id = a.id)
   WHERE a.id IN (SELECT t.animal_id FROM tmp_demo_animal t WHERE t.destino = 'concluida');
   UPDATE animal a
   SET a.status = 'em_processo',
-      a.atualizado_em = (SELECT t.d_aprov FROM tmp_demo_animal t WHERE t.animal_id = a.id)
+      a.atualizado_em = (SELECT f.data_fim FROM tmp_demo_fim f WHERE f.animal_id = a.id)
   WHERE a.id IN (SELECT t.animal_id FROM tmp_demo_animal t WHERE t.destino = 'aprovada');
 
   -- ---------------------------------------------------------------------------
@@ -284,9 +296,13 @@ BEGIN
   WHERE t.status = 'concluida' AND t.d_concl + INTERVAL 30 DAY <= NOW();
 
   -- Cada adotante "se cadastrou" um pouco antes do primeiro pedido
+  DROP TEMPORARY TABLE IF EXISTS tmp_demo_primeiro;
+  CREATE TEMPORARY TABLE tmp_demo_primeiro (usuario_id INT UNSIGNED NOT NULL, primeiro DATETIME NOT NULL);
+  INSERT INTO tmp_demo_primeiro (usuario_id, primeiro)
+  SELECT usuario_id, MIN(criado_em) FROM tmp_demo_sol GROUP BY usuario_id;
   UPDATE usuario u
-  SET u.criado_em = (SELECT MIN(t.criado_em) FROM tmp_demo_sol t WHERE t.usuario_id = u.id) - INTERVAL (1 + MOD(u.id, 20)) DAY
-  WHERE u.email LIKE '%@demo.petconnect' AND u.id IN (SELECT t2.usuario_id FROM tmp_demo_sol t2);
+  SET u.criado_em = (SELECT p.primeiro FROM tmp_demo_primeiro p WHERE p.usuario_id = u.id) - INTERVAL (1 + MOD(u.id, 20)) DAY
+  WHERE u.email LIKE '%@demo.petconnect' AND u.id IN (SELECT t.usuario_id FROM tmp_demo_sol t);
   UPDATE usuario u
   SET u.criado_em = NOW() - INTERVAL (1 + MOD(CRC32(CONCAT(u.id, 'u')), @demo_dias)) DAY
   WHERE u.email LIKE '%@demo.petconnect' AND u.criado_em < NOW() - INTERVAL (@demo_dias + 20) DAY;
@@ -355,6 +371,8 @@ BEGIN
   DROP TEMPORARY TABLE IF EXISTS tmp_demo_animal;
   DROP TEMPORARY TABLE IF EXISTS tmp_demo_usuario;
   DROP TEMPORARY TABLE IF EXISTS tmp_demo_seq;
+  DROP TEMPORARY TABLE IF EXISTS tmp_demo_fim;
+  DROP TEMPORARY TABLE IF EXISTS tmp_demo_primeiro;
 
   SELECT
     (SELECT COUNT(*) FROM usuario WHERE email LIKE '%@demo.petconnect')                       AS adotantes_demo,
@@ -369,6 +387,7 @@ END$$
 CREATE PROCEDURE sp_limpar_historico_demo()
 BEGIN
   SET @massa_dados = 1;   -- também libera a limpeza dos logs (log imutável, script 10)
+  SET SQL_SAFE_UPDATES = 0;
 
   DELETE FROM log_acao WHERE JSON_EXTRACT(detalhes, '$.demonstracao') = TRUE;
   -- histórico e acompanhamento saem junto com a solicitação (ON DELETE CASCADE)
@@ -386,7 +405,8 @@ END$$
 DELIMITER ;
 
 -- Gera 6 meses de uso: 60 animais e 40 adotantes (leva menos de 1 segundo).
--- Para apagar:  CALL sp_limpar_historico_demo();
+-- Antes, apaga um histórico anterior (o script pode ser rodado de novo).
+CALL sp_limpar_historico_demo();
 CALL sp_gerar_historico_demo(6, 60, 40);
 
 -- Conferência rápida
