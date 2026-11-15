@@ -12,3 +12,4 @@ O documento é acumulado: cada versão contém todas as Sprints anteriores e a a
 - **Sprint 07 (banco de dados):** views de relatório, pesquisa, mais logs e histórico de demonstração em [`SPRINT07_BANCO.md`](SPRINT07_BANCO.md). Scripts `database/08` e `09`.
 - **Sprint 08 (front):** controle de permissões, usabilidade e revisão das regras em [`SPRINT08_FRONT.md`](SPRINT08_FRONT.md).
 - **Sprint 08 (banco de dados):** usuário somente leitura, log imutável e regras de negócio no banco em [`SPRINT08_BANCO.md`](SPRINT08_BANCO.md). Scripts `database/10` e `11`.
+- **Sprint 08 (back-end):** permissões, regras revisadas, logs e paginação em [`SPRINT08_BACK.md`](SPRINT08_BACK.md).

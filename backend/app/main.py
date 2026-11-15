@@ -1,7 +1,9 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.exc import DBAPIError
 
 from app.database import testar_conexao
 
@@ -42,6 +44,24 @@ app.mount(
     StaticFiles(directory=str(UPLOADS_DIR)),
     name="uploads"
 )
+
+
+# =========================================================
+# REGRAS DE NEGÓCIO DO BANCO → 409 (Sprint 08)
+# Os triggers do script database/10 recusam operações que quebram as regras
+# (RN01–RN08) com SIGNAL SQLSTATE '45000' e uma mensagem em português.
+# O MySQL devolve isso como erro 1644; aqui ele vira 409 com a mensagem,
+# que o front já mostra no aviso. Outros erros do banco continuam 500.
+# =========================================================
+
+@app.exception_handler(DBAPIError)
+async def erro_do_banco(request: Request, erro: DBAPIError):
+    original = getattr(erro, "orig", None)
+    argumentos = getattr(original, "args", ()) or ()
+    if argumentos and argumentos[0] == 1644:
+        mensagem = str(argumentos[1]) if len(argumentos) > 1 else "Operação não permitida pelas regras do sistema."
+        return JSONResponse(status_code=409, content={"detail": mensagem})
+    raise erro
 
 
 # =========================================================
