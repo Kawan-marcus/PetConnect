@@ -15,3 +15,8 @@ venv/
 backend/.env
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+# Testes
+.pytest_cache/
+testes-e2e/resultado/
+testes-e2e/foto-teste.png

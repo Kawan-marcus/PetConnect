@@ -29,7 +29,7 @@ function validar(v) {
     nome: obrig(v.nome) && 'Informe o nome.',
     especie: obrig(v.especie) && 'Selecione a espécie.',
     raca: obrig(v.raca) && 'Informe a raça (ou SRD).',
-    idadeAnos: meses <= 0 && 'Informe a idade aproximada.',
+    idadeAnos: (meses <= 0 && 'Informe a idade aproximada.') || (meses > 300 && 'Idade inválida: no máximo 25 anos.'),
     sexo: obrig(v.sexo) && 'Selecione o sexo.',
     porte: obrig(v.porte) && 'Selecione o porte.',
     energia: obrig(v.energia) && 'Selecione o nível de energia.',

@@ -158,6 +158,8 @@ BEGIN
   UPDATE tmp_demo_animal t
   SET t.ong_usuario = (SELECT MIN(u.id) FROM usuario u JOIN animal a ON a.ong_id = u.ong_id WHERE a.id = t.animal_id);
 
+  -- Adoção aprovada há mais de um mês já foi concluída (não fica parada em "aprovada")
+  UPDATE tmp_demo_animal SET destino = 'concluida' WHERE destino = 'aprovada' AND d_concl < NOW() - INTERVAL 30 DAY;
   -- O que ainda não deu tempo de acontecer "volta" uma etapa
   UPDATE tmp_demo_animal SET destino = 'aprovada'   WHERE destino = 'concluida' AND d_concl > NOW();
   UPDATE tmp_demo_animal SET destino = 'em_analise' WHERE destino = 'aprovada'  AND d_aprov > NOW();
@@ -201,6 +203,10 @@ BEGIN
   UPDATE tmp_demo_sol SET status = 'pendente' WHERE k > 1 AND status IN ('recusada', 'cancelada') AND d_fim > NOW();
   UPDATE tmp_demo_sol SET status = 'pendente' WHERE k > 1 AND status = 'em_analise' AND d_analise > NOW();
   DELETE FROM tmp_demo_sol WHERE criado_em > NOW();
+  -- Sprint 09 (bug B07): pedido antigo não fica aberto para sempre (o adotante desistiu).
+  -- Sem isso o dashboard mostrava pedidos "esperando há 160 dias".
+  UPDATE tmp_demo_sol SET status = 'cancelada', d_fim = criado_em + INTERVAL 10 DAY
+  WHERE status IN ('pendente', 'em_analise') AND criado_em < NOW() - INTERVAL 45 DAY;
 
   UPDATE tmp_demo_sol
   SET score = CASE WHEN status IN ('aprovada', 'concluida') THEN 70 + MOD(CRC32(CONCAT(animal_id, 's', k)), 27)

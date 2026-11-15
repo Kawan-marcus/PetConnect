@@ -96,7 +96,7 @@ export default function OngAcompanhamentos() {
           </div>
           <div className="campo">
             <label htmlFor="ac-data">Data</label>
-            <input id="ac-data" type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
+            <input id="ac-data" type="date" value={form.data} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setForm({ ...form, data: e.target.value })} />
           </div>
         </div>
         <div className="campo">

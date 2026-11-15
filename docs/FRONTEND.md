@@ -124,3 +124,17 @@ npm run preview   # testa o build localmente
 ```
 
 Se o servidor onde o site for publicado não redirecionar todas as rotas para o `index.html`, use `VITE_HASH_ROUTER=true` no `.env`. As URLs passam a ficar no formato `/#/animais`.
+
+## Versão 1.0.0-rc (Sprints 07 a 10)
+
+| Área | Telas |
+|---|---|
+| Administrador | Dashboard (`/admin`), ONGs, Usuários, Animais, Relatórios (`/admin/relatorios`), Histórico de adoções, Histórico de operações (`/admin/operacoes`), Pesquisa geral (`/admin/pesquisa`), Permissões (`/admin/permissoes`) |
+| ONG | Painel com desempenho do período, Meus animais, Solicitações, Pós-adoção, Relatórios (`/ong/relatorios`) |
+| Adotante | Minha área, Recomendados, Favoritos, Comparar, Formulário, Minhas solicitações |
+| Todos | Perfil com "O que você pode fazer" |
+
+- **Permissões:** `src/utils/permissoes.js` concentra o que cada perfil pode fazer; as telas usam `pode(usuario, acao)`.
+- **Relatórios e exportação:** `src/utils/relatorios.js` (cálculos), `src/utils/exportar.js` (CSV e PDF), `src/components/TabelaRelatorio.jsx`.
+- **Validações:** `src/hooks/useFormulario.js` (e-mail, senha, CNPJ com dígitos verificadores).
+- **Testes da interface:** `testes-e2e/sistema.cjs` (Playwright) — ver README.

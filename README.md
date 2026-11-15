@@ -1,58 +1,192 @@
-# PetConnect: Plataforma de Adoção de Animais
+# PetConnect: Plataforma de Adoção Responsável de Animais
 
-Sistema que conecta animais resgatados por ONGs a adotantes compatíveis. Projeto integrado das disciplinas **Fábrica de Software** e **Tópicos Avançados** (2026.2).
+**Versão 1.0.0-rc (Release Candidate)** · Fábrica de Software e Tópicos Avançados · 2026.2
 
-- O adotante preenche um formulário de avaliação, e o sistema calcula a **compatibilidade** com cada animal.
-- A ONG recebe as solicitações já com esse índice e decide.
-- O administrador aprova ONGs e acompanha os indicadores.
+O PetConnect conecta cães e gatos resgatados por ONGs a adotantes compatíveis. O adotante preenche um formulário sobre a própria rotina, o sistema calcula a **compatibilidade** com cada animal usando um modelo de IA, e a ONG recebe os pedidos já com esse índice para decidir com mais segurança.
 
-> **Equipe:** Grupo **[Nº]**: [Nome 1] · [Nome 2] · [Nome 3] · [Nome 4] · [Nome 5]
+## Equipe
 
-## Arquitetura
+**Grupo [Nº]**
+
+| Integrante | Papel |
+|---|---|
+| Kawan Marcus | Front-end, banco de dados e documentação |
+| Ecliton Matheus | Back-end (API) |
+| [Nome] | [Papel] |
+| [Nome] | [Papel] |
+| [Nome] | [Papel] |
+
+## Objetivo da solução
+
+Muitas adoções dão errado porque o animal não combina com a rotina da família (espaço, tempo sozinho, crianças, outros animais, nível de energia). O PetConnect:
+
+- **ajuda o adotante** a encontrar animais compatíveis com o seu perfil;
+- **dá à ONG** uma ferramenta para receber, analisar, aprovar ou recusar pedidos e acompanhar o pós-adoção;
+- **dá ao administrador** o controle de ONGs e contas, com dashboard, relatórios e histórico de operações.
+
+| Perfil | O que faz |
+|---|---|
+| Visitante | navega pelo catálogo, filtra animais e cria uma conta |
+| Adotante | preenche o formulário, vê recomendações e compatibilidade, favorita, pede adoção e acompanha cada etapa |
+| ONG | cadastra animais (com sugestão da IA pela foto), analisa pedidos, aprova, recusa, conclui e registra o pós-adoção; tem relatórios próprios |
+| Administrador | aprova ONGs, gerencia contas e animais, acompanha dashboard, relatórios, pesquisa geral, logs e permissões |
+
+## Tecnologias
+
+| Camada | Tecnologias | Pasta |
+|---|---|---|
+| Interface | React 19, Vite 7, React Router 7, Axios | `src/`, `public/` |
+| API | Python 3.11+, FastAPI, SQLAlchemy, PyMySQL, JWT (PyJWT), bcrypt | `backend/` |
+| Inteligência artificial | scikit-learn (regressão logística), NumPy, OpenCL opcional para cálculo em lote | `backend/app/ia/` |
+| Banco de dados | MySQL 8 (funciona também no MariaDB do XAMPP) | `database/` |
+| Testes | pytest (API) e Playwright (interface) | `backend/tests/`, `testes-e2e/` |
 
 ![Arquitetura](docs/diagramas/arquitetura.png)
 
-| Camada | Tecnologia | Pasta |
+## Requisitos para executar
+
+- **Node.js 20** ou mais novo (inclui o `npm`)
+- **Python 3.11** ou mais novo
+- **MySQL 8** com o **MySQL Workbench** (ou MariaDB/XAMPP)
+- Git
+
+## Instalação e configuração
+
+### 1. Baixar o projeto
+```bash
+git clone https://github.com/Kawan-marcus/PetConnect.git
+cd PetConnect
+```
+
+### 2. Banco de dados
+
+No MySQL Workbench, conectado como `root`, abra e execute (botão ⚡) os scripts da pasta `database`, **nesta ordem**:
+
+| Ordem | Script | O que faz |
 |---|---|---|
-| Interface | React 19 + Vite + React Router + Axios | `src/`, `public/` |
-| API / regras de negócio | Python + FastAPI + SQLAlchemy + JWT | `backend/` |
-| Banco de dados | MySQL 8 | `database/` |
-| Componente avançado | Modelo de compatibilidade + processamento em lote com OpenCL | `backend/app/routes/ia.py` *(em evolução)* |
+| 1 | `01_schema.sql` | cria o banco `petconnect` e as 17 tabelas (apaga o banco se já existir) |
+| 2 | `02_views.sql` | consultas prontas usadas pela API |
+| 3 | `03_seed.sql` | dados iniciais: administrador, ONGs, adotantes e animais |
+| 4 | `05_sprint06_modulo3.sql` | módulo de IA, tabela de logs e triggers de auditoria |
+| 5 | `08_sprint07_relatorios.sql` | índices, views de relatório, pesquisa e mais logs |
+| 6 | `09_dados_demonstracao.sql` | *(opcional)* seis meses de histórico para a apresentação |
+| 7 | `10_sprint08_permissoes_regras.sql` | usuário só leitura, log imutável e regras de negócio no banco |
+| 8 | `12_verificacao_final.sql` | *(opcional)* confere a estrutura; o esperado é "OK" em todas as linhas |
 
-## Estrutura do repositório
+Depois, crie o usuário que a API usa (não use o `root` no sistema):
+```sql
+CREATE USER 'petconnect_app'@'localhost' IDENTIFIED BY 'troque_esta_senha';
+GRANT SELECT, INSERT, UPDATE, DELETE ON petconnect.* TO 'petconnect_app'@'localhost';
 ```
-backend/      API em FastAPI (ver backend/README.md)
-database/     scripts SQL, dados de exemplo e diagramas MER/relacional (ver database/README.md)
-docs/         contrato da API, diagramas, documentação das Sprints e do front
-public/       arquivos estáticos do front (inclui fotos de exemplo dos animais)
-src/          código do front-end React
+Estrutura completa: [docs/BANCO_DE_DADOS.md](docs/BANCO_DE_DADOS.md).
+
+### 3. Back-end (API)
+```bash
+cd backend
+copy .env.example .env          # no Git Bash/Linux: cp .env.example .env
+python -m venv venv
+venv\Scripts\activate           # no Git Bash: source venv/Scripts/activate
+pip install -r requirements.txt
+```
+Abra o `backend/.env` e preencha:
+
+| Variável | Exemplo | Para quê |
+|---|---|---|
+| `DB_HOST` / `DB_PORT` | `localhost` / `3306` | onde está o MySQL |
+| `DB_USER` / `DB_PASSWORD` | `petconnect_app` / sua senha | usuário criado no passo 2 |
+| `DB_NAME` | `petconnect` | nome do banco |
+| `JWT_SECRET` | texto aleatório com 32+ caracteres | assina os tokens de login |
+| `APP_ENV` | `development` | em `production` o `JWT_SECRET` é obrigatório |
+| `IA_MOTOR` | `auto` | `auto` usa OpenCL se houver, senão NumPy |
+
+### 4. Front-end
+Na **raiz** do projeto:
+```bash
+npm install
+copy .env.example .env          # deixe VITE_USE_MOCK=false para usar a API
 ```
 
-## Como executar localmente
+## Como executar
 
-São três partes, nesta ordem. Na primeira vez, siga os READMEs de cada uma.
+Abra dois terminais:
 
-1. **Banco:** rode `database/01_schema.sql`, `02_views.sql` e `03_seed.sql` no MySQL Workbench. Detalhes em [database/README.md](database/README.md).
-2. **Backend:** na pasta `backend`, configure o `.env` e rode `uvicorn app.main:app --reload --port 8000`. Detalhes em [backend/README.md](backend/README.md).
-3. **Front-end:** na raiz do projeto:
-   ```bash
-   npm install
-   copy .env.example .env      # e deixe VITE_USE_MOCK=false para usar o backend
-   npm run dev
-   ```
-   Abra http://localhost:5173. Detalhes em [docs/FRONTEND.md](docs/FRONTEND.md).
+```bash
+# Terminal 1 — API (dentro de backend/, com o venv ativado)
+uvicorn app.main:app --reload --port 8000
 
-> Com `VITE_USE_MOCK=true`, o front funciona sozinho, com dados simulados no navegador (útil para desenvolver as telas sem o backend).
+# Terminal 2 — Front (na raiz)
+npm run dev
+```
+
+- Sistema: **http://localhost:5173**
+- Documentação interativa da API (Swagger): **http://localhost:8000/docs**
+- Teste do banco: http://localhost:8000/api/health/db → `{"status": "conectado"}`
+
+> Com `VITE_USE_MOCK=true` o front funciona sozinho, com dados simulados no navegador (útil para desenvolver telas sem a API).
 
 ### Contas de teste (senha `123456`)
+
 | Perfil | E-mail |
 |---|---|
-| Adotante | ana@email.com |
-| ONG | ong@patinhas.org |
 | Administrador | admin@adotapet.com |
+| ONG aprovada | ong@patinhas.org |
+| ONG pendente | amigos4patas@email.com |
+| Adotante | ana@email.com |
+
+## Testes
+
+```bash
+# API: 97 casos (funcionais, validação, regras e permissões) — dentro de backend/
+pip install pytest
+python -m pytest tests -v                  # gera backend/tests/RELATORIO.md
+
+# Interface: 25 casos (navegação, validação e fluxo completo) — com API e front ligados
+npm install --no-save playwright
+npx playwright install chromium
+npm run teste:interface                    # gera testes-e2e/resultado/RELATORIO.md e prints
+```
+
+## Estrutura do projeto
+
+```
+PetConnect/
+├── src/                     front-end React
+│   ├── api/                 chamadas à API (e modo simulado em api/mock)
+│   ├── components/          componentes reutilizáveis (layout, filtros, gráficos, tabelas)
+│   ├── context/             sessão, avisos, favoritos e confirmações
+│   ├── hooks/               formulários, tabelas, carregamento
+│   ├── pages/               telas: publico/, adotante/, ong/, admin/
+│   ├── routes/              rotas protegidas por perfil
+│   ├── styles/              estilos globais
+│   └── utils/               formatação, permissões, relatórios, exportação
+├── public/                  arquivos estáticos (fotos de exemplo)
+├── backend/
+│   ├── app/
+│   │   ├── main.py          criação da API, CORS e tratamento de erros
+│   │   ├── routes/          rotas: auth, animais, ong, solicitações, admin, ia…
+│   │   ├── ia/              modelo de compatibilidade e cálculo em lote (OpenCL)
+│   │   ├── security.py      JWT e conferência da conta a cada requisição
+│   │   └── database.py      conexão com o MySQL
+│   ├── tests/               testes automatizados da API (pytest)
+│   └── requirements.txt
+├── database/                scripts SQL (01 a 12) e diagramas MER/relacional
+├── testes-e2e/              testes da interface (Playwright)
+└── docs/                    API, banco, front, diagramas e documentação das Sprints
+```
 
 ## Documentação
-- [Documentação das Sprints](docs/sprints/) (arquitetura, diagramas, testes, evidências)
-- [Contrato da API](docs/CONTRATO_API.md): todas as rotas e o formato do JSON
-- [Banco de dados](database/README.md): tabelas, regras e decisões de modelagem
+
+- [API — todas as rotas, parâmetros, autenticação e exemplos](docs/API.md) · [OpenAPI](docs/openapi.json) · [Contrato front ↔ back](docs/CONTRATO_API.md)
+- [Banco de dados — dicionário de dados final](docs/BANCO_DE_DADOS.md) · [scripts](database/README.md)
+- [Front-end](docs/FRONTEND.md)
+- [Documentação de cada Sprint](docs/sprints/)
 - Diagramas: [arquitetura](docs/diagramas/arquitetura.png) · [classes](docs/diagramas/diagrama_classes.png) · [MER](database/diagramas/mer_conceitual.png) · [relacional](database/diagramas/modelo_relacional.png)
+
+## Problemas comuns
+
+| Mensagem | Solução |
+|---|---|
+| `Access denied for user ...` | usuário ou senha errados no `backend/.env` |
+| `Unknown database 'petconnect'` | rode os scripts do banco (passo 2) |
+| A tela fica em "Carregando" | a API não está ligada na porta 8000 |
+| "Sua sessão expirou" | entre de novo (acontece ao trocar o `JWT_SECRET`) |

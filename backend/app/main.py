@@ -23,7 +23,7 @@ from app.routes.recuperacao import router as recuperacao_router
 
 app = FastAPI(
     title="PetConnect API",
-    version="1.0.0"
+    version="1.0.0-rc"
 )
 
 
@@ -105,3 +105,12 @@ def verificar_banco():
         "status": "conectado",
         "banco": banco
     }
+
+
+# =========================================================
+# DOCUMENTAÇÃO (Swagger em /docs) — Sprint 10
+# =========================================================
+
+from app.documentacao import aplicar as aplicar_documentacao  # noqa: E402
+
+aplicar_documentacao(app)

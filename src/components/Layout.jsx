@@ -155,9 +155,12 @@ export default function Layout() {
     window.scrollTo?.(0, 0);
   }, [location.pathname]);
 
+  // Sprint 09 (bug B06): ao sair numa página protegida, a proteção da rota mandava
+  // para o login ("entre para continuar") antes de ir para o início. Agora sai da
+  // página primeiro e só depois encerra a sessão.
   const sair = () => {
-    logout();
-    navigate('/');
+    navigate('/', { replace: true });
+    setTimeout(logout, 0);
   };
 
   return (

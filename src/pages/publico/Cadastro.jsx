@@ -36,7 +36,7 @@ export default function Cadastro() {
         : {
             nomeOng: !v.nomeOng && 'Informe o nome da ONG.',
             nomeResponsavel: !v.nomeResponsavel && 'Informe o responsável.',
-            cnpj: !/^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/.test(v.cnpj) && 'CNPJ inválido (00.000.000/0000-00).',
+            cnpj: validadores.cnpj(v.cnpj),
           }),
       termos: !v.termos && 'É preciso aceitar os termos.',
     }),

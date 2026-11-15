@@ -15,6 +15,7 @@ Banco da Plataforma de Adoção de Animais, alinhado com o front-end (`docs/CONT
 | `09_dados_demonstracao.sql` | **Sprint 07:** 6 meses de histórico de demonstração (adotantes `@demo.petconnect`, animais, pedidos com linha do tempo e logs com data). Apague com `CALL sp_limpar_historico_demo();` |
 | `10_sprint08_permissoes_regras.sql` | **Sprint 08:** usuário somente leitura para relatórios, log imutável e regras de negócio no banco (triggers RN01–RN08) |
 | `11_consultas_sprint07_08.sql` | **Sprint 08:** consultas de evidência (dashboard, relatórios, filtros, pesquisa, logs, permissões) e teste automático das regras |
+| `12_verificacao_final.sql` | **Sprint 10:** confere a estrutura final e a consistência dos dados com as regras de negócio (esperado: OK em todas as linhas) |
 | `diagramas/mer_conceitual.png` | MER (modelo conceitual) |
 | `diagramas/modelo_relacional.png` | Modelo relacional (tabelas, PK, FK) |
 | `diagramas/*.mmd` | Fonte dos diagramas (Mermaid; o GitHub mostra como imagem) |
@@ -28,7 +29,7 @@ Banco da Plataforma de Adoção de Animais, alinhado com o front-end (`docs/CONT
 ### Opção 1: MySQL Workbench
 1. Abra a conexão local (normalmente `root@localhost`).
 2. **File → Open SQL Script** → `01_schema.sql` → clique no raio ⚡ para executar.
-3. Repita com `02_views.sql`, `03_seed.sql`, `05_sprint06_modulo3.sql`, `08_sprint07_relatorios.sql`, `09_dados_demonstracao.sql` (opcional, para apresentação) e `10_sprint08_permissoes_regras.sql`, nessa ordem.
+3. Repita com `02_views.sql`, `03_seed.sql`, `05_sprint06_modulo3.sql`, `08_sprint07_relatorios.sql`, `09_dados_demonstracao.sql` (opcional, para apresentação) e `10_sprint08_permissoes_regras.sql`, nessa ordem. Para conferir, rode `12_verificacao_final.sql`. O dicionário de dados completo está em [`docs/BANCO_DE_DADOS.md`](../docs/BANCO_DE_DADOS.md).
 4. Clique com o botão direito em **Schemas** → **Refresh All**. O banco `petconnect` aparece.
 
 ### Opção 2: XAMPP (phpMyAdmin)

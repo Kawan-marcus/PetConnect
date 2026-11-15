@@ -380,6 +380,14 @@ def registrar_acompanhamento(
             "foto"
         )
 
+        # Sprint 09 (bug B04): aceitava acompanhamento com data no futuro
+
+        data_informada = dados.data.replace(tzinfo=None) if dados.data.tzinfo is None else dados.data.astimezone().replace(tzinfo=None)
+
+        if data_informada.date() > datetime.now().date():
+
+            raise HTTPException(status_code=400, detail="A data do acompanhamento não pode estar no futuro.")
+
         if dados.tipo not in tipos_permitidos:
             raise HTTPException(
                 status_code=400,
