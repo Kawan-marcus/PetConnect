@@ -1,10 +1,11 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import text
 
 from app.database import engine
+from app.paginacao import LIMIT, OFFSET, limite_sql
 from app.logs import definir_usuario_logado
 from app.security import obter_usuario_id_token
 from app.routes.solicitacoes import buscar_historicos, criar_notificacao
@@ -64,6 +65,8 @@ def iso(valor):
 def listar_usuarios(
     perfil: str | None = None,
     busca: str | None = None,
+    limit: int | None = LIMIT,
+    offset: int = OFFSET,
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     filtros = ["1 = 1"]
@@ -86,8 +89,9 @@ def listar_usuarios(
                 FROM usuario
                 WHERE {" AND ".join(filtros)}
                 ORDER BY criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
-            parametros
+            {**parametros, "limit": limite_sql(limit), "offset": offset}
         ).mappings().all()
 
     return [
@@ -123,6 +127,21 @@ def atualizar_usuario(
 
         if alvo_id == usuario_id and not dados.ativo:
             raise HTTPException(status_code=409, detail="Você não pode desativar a sua própria conta.")
+
+        if not dados.ativo:
+            alvo = conexao.execute(
+                text("SELECT perfil, ativo FROM usuario WHERE id = :id FOR UPDATE"),
+                {"id": alvo_id}
+            ).mappings().first()
+            if alvo and alvo["perfil"] == "admin" and alvo["ativo"]:
+                admins_ativos = conexao.execute(
+                    text("SELECT id FROM usuario WHERE perfil = 'admin' AND ativo = 1 FOR UPDATE")
+                ).scalars().all()
+                if len(admins_ativos) <= 1:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Não é possível desativar o último administrador ativo."
+                    )
 
         resultado = conexao.execute(
             text("UPDATE usuario SET ativo = :ativo WHERE id = :alvo_id"),
@@ -164,6 +183,8 @@ def atualizar_usuario(
 @router.get("/ongs")
 def listar_ongs(
     status: str | None = None,
+    limit: int | None = LIMIT,
+    offset: int = OFFSET,
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     parametros = {}
@@ -189,8 +210,9 @@ def listar_ongs(
                 FROM ong o
                 {where}
                 ORDER BY o.criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
-            parametros
+            {**parametros, "limit": limite_sql(limit), "offset": offset}
         ).mappings().all()
 
     return [
@@ -278,6 +300,8 @@ def alterar_status_ong(
 def listar_todos_animais(
     status: str | None = None,
     especie: str | None = None,
+    limit: int | None = LIMIT,
+    offset: int = OFFSET,
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     filtros = ["a.excluido_em IS NULL"]
@@ -304,8 +328,9 @@ def listar_todos_animais(
                 JOIN ong o ON o.id = a.ong_id
                 WHERE {" AND ".join(filtros)}
                 ORDER BY a.criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
-            parametros
+            {**parametros, "limit": limite_sql(limit), "offset": offset}
         ).mappings().all()
 
         resposta = []
@@ -386,6 +411,8 @@ def remover_animal(
 
 @router.get("/solicitacoes")
 def listar_todas_solicitacoes(
+    limit: int | None = LIMIT,
+    offset: int = OFFSET,
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
@@ -403,7 +430,9 @@ def listar_todas_solicitacoes(
                 JOIN usuario u ON u.id = s.usuario_id
                 JOIN ong o ON o.id = a.ong_id
                 ORDER BY s.criado_em DESC
-            """)
+                LIMIT :limit OFFSET :offset
+            """),
+            {"limit": limite_sql(limit), "offset": offset}
         ).mappings().all()
 
         historicos = buscar_historicos(conexao, [s["id"] for s in linhas])
@@ -526,3 +555,87 @@ def desempenho(
             for m in medicoes
         ]
     }
+
+
+# =========================================================
+# GET /api/admin/logs   (Sprint 07/08: histórico de operações)
+# Lê a tabela log_acao (gravada pelos triggers do banco e pelo login).
+# Filtros opcionais: de, ate (AAAA-MM-DD), entidade, acao, usuario (id).
+# Somente leitura: o log é imutável (database/10_sprint08_permissoes_regras.sql).
+# =========================================================
+
+@router.get("/logs")
+def listar_logs(
+    de: date | None = None,
+    ate: date | None = None,
+    entidade: str | None = None,
+    acao: str | None = None,
+    usuario: int | None = None,
+    limite: int = Query(default=5000, ge=1, le=20000, description="Máximo de registros (mais recentes primeiro)"),
+    usuario_id: int = Depends(obter_usuario_id_token)
+):
+    import json
+
+    filtros = ["1 = 1"]
+    parametros = {"limite": limite}
+    if de:
+        filtros.append("l.criado_em >= :de")
+        parametros["de"] = de
+    if ate:
+        filtros.append("l.criado_em < DATE_ADD(:ate, INTERVAL 1 DAY)")
+        parametros["ate"] = ate
+    if entidade:
+        filtros.append("l.entidade = :entidade")
+        parametros["entidade"] = entidade
+    if acao:
+        filtros.append("l.acao LIKE :acao")
+        parametros["acao"] = f"{acao}%"
+    if usuario:
+        filtros.append("l.usuario_id = :usuario")
+        parametros["usuario"] = usuario
+
+    with engine.connect() as conexao:
+        exigir_admin(conexao, usuario_id)
+
+        existe = conexao.execute(text(
+            "SELECT COUNT(*) FROM information_schema.tables "
+            "WHERE table_schema = DATABASE() AND table_name = 'log_acao'"
+        )).scalar()
+        if not existe:
+            raise HTTPException(status_code=404, detail="Tabela de logs não encontrada. Rode o script database/05.")
+
+        linhas = conexao.execute(
+            text(f"""
+                SELECT l.id, l.criado_em, l.acao, l.entidade, l.entidade_id, l.detalhes, l.origem, l.ip,
+                       u.id AS u_id, u.nome AS u_nome, u.perfil AS u_perfil
+                FROM log_acao l
+                LEFT JOIN usuario u ON u.id = l.usuario_id
+                WHERE {" AND ".join(filtros)}
+                ORDER BY l.criado_em DESC, l.id DESC
+                LIMIT :limite
+            """),
+            parametros
+        ).mappings().all()
+
+    def detalhes(valor):
+        if valor is None or isinstance(valor, dict):
+            return valor
+        try:
+            return json.loads(valor)
+        except (TypeError, ValueError):
+            return {"texto": str(valor)}
+
+    return [
+        {
+            "id": l["id"],
+            "criadoEm": iso(l["criado_em"]),
+            "acao": l["acao"],
+            "entidade": l["entidade"],
+            "entidadeId": l["entidade_id"],
+            "detalhes": detalhes(l["detalhes"]),
+            "origem": l["origem"],
+            "ip": l["ip"],
+            "usuario": {"id": l["u_id"], "nome": l["u_nome"], "perfil": l["u_perfil"]} if l["u_id"] else None,
+        }
+        for l in linhas
+    ]

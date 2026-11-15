@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import text
 
 from app.database import engine
+from app.paginacao import LIMIT, OFFSET, limite_sql
 from app.security import obter_usuario_id_token
 
 
@@ -28,13 +29,14 @@ class AcompanhamentoRequest(BaseModel):
 # FUNÇÕES AUXILIARES
 # ============================================================
 
-def verificar_ong(conexao, usuario_id: int):
+def verificar_ong(conexao, usuario_id: int, exigir_aprovada: bool = True):
     usuario = conexao.execute(
         text("""
             SELECT
                 u.id,
                 u.perfil,
                 u.ong_id,
+                u.ativo,
                 o.nome AS ong_nome,
                 o.status AS ong_status
             FROM usuario u
@@ -57,6 +59,9 @@ def verificar_ong(conexao, usuario_id: int):
             detail="Usuário não encontrado."
         )
 
+    if not usuario["ativo"]:
+        raise HTTPException(status_code=401, detail="Conta desativada.")
+
     if usuario["perfil"] != "ong":
         raise HTTPException(
             status_code=403,
@@ -69,6 +74,14 @@ def verificar_ong(conexao, usuario_id: int):
             detail="Usuário não está vinculado a uma ONG."
         )
 
+    # Sprint 08: ONG pendente ou suspensa pode CONSULTAR as próprias listas (o painel
+    # mostra o aviso "aguardando aprovação"), mas não cadastra nem decide nada.
+    if exigir_aprovada and usuario.get("ong_status") != "aprovada":
+        raise HTTPException(
+            status_code=403,
+            detail="A ONG precisa estar aprovada e ativa para realizar esta operação."
+        )
+
     return usuario
 
 
@@ -79,13 +92,15 @@ def verificar_ong(conexao, usuario_id: int):
 
 @router.get("/ong/adocoes")
 def listar_adocoes_da_ong(
+    limit: int | None = LIMIT,
+    offset: int = OFFSET,
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
 
         usuario = verificar_ong(
             conexao,
-            usuario_id
+            usuario_id, exigir_aprovada=False
         )
 
         solicitacoes = conexao.execute(
@@ -126,9 +141,12 @@ def listar_adocoes_da_ong(
                   AND a.excluido_em IS NULL
 
                 ORDER BY s.atualizado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
             {
-                "ong_id": usuario["ong_id"]
+                "ong_id": usuario["ong_id"],
+                "limit": limite_sql(limit),
+                "offset": offset
             }
         ).mappings().all()
 

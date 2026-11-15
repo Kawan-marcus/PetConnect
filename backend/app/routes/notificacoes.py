@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 
 from app.database import engine
+from app.paginacao import LIMIT, OFFSET, limite_sql
 from app.security import obter_usuario_id_token
 
 
@@ -17,6 +18,8 @@ router = APIRouter(
 # =========================================================
 @router.get("")
 def listar_notificacoes(
+    limit: int | None = LIMIT,
+    offset: int = OFFSET,
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
@@ -32,9 +35,12 @@ def listar_notificacoes(
                 FROM notificacao
                 WHERE usuario_id = :usuario_id
                 ORDER BY criado_em DESC
+                LIMIT :limit OFFSET :offset
             """),
             {
-                "usuario_id": usuario_id
+                "usuario_id": usuario_id,
+                "limit": limite_sql(limit),
+                "offset": offset
             }
         ).mappings().all()
 

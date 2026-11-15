@@ -16,7 +16,7 @@ import { STATUS_ANIMAL, ESPECIES, PORTES, formatarIdade } from '../../utils/form
 /**
  * RF04, RF15, RF19: lista de animais da ONG com troca de status e ações.
  * Sprint 07: pesquisa por nome/raça. Sprint 08 (revisão das regras):
- *  - "Adotado" não é mais escolhido à mão: só a conclusão da adoção marca o animal (RN06);
+ *  - "Em processo" e "Adotado" não são escolhidos à mão: mudam pela aprovação e pela conclusão (RN06);
  *  - animal adotado não volta para a lista; voltar de "em processo" para "disponível" pede confirmação;
  *  - remoção com confirmação explicando a RN08.
  */
@@ -123,11 +123,11 @@ export default function OngAnimais() {
                       aria-label={`Situação de ${a.nome}`}
                       className={`select-status status--${STATUS_ANIMAL[a.status].tom}`}
                       disabled={a.status === 'adotado'}
-                      title={a.status === 'adotado' ? 'Adoção concluída: a situação não muda mais.' : '"Adotado" é marcado automaticamente quando você conclui a adoção.'}
+                      title={a.status === 'adotado' ? 'Adoção concluída: a situação não muda mais.' : '"Em processo" e "Adotado" mudam sozinhos quando você aprova e conclui uma adoção.'}
                     >
                       {Object.entries(STATUS_ANIMAL).map(([k, v]) => (
-                        <option key={k} value={k} disabled={k === 'adotado' && a.status !== 'adotado'}>
-                          {v.rotulo}{k === 'adotado' && a.status !== 'adotado' ? ' (pela conclusão)' : ''}
+                        <option key={k} value={k} disabled={k !== 'disponivel' && k !== a.status}>
+                          {v.rotulo}{k !== 'disponivel' && k !== a.status ? (k === 'adotado' ? ' (pela conclusão)' : ' (pela aprovação)') : ''}
                         </option>
                       ))}
                     </select>

@@ -227,6 +227,7 @@ export async function removerAnimal(id) {
  */
 function regraStatusAnimal(a, novo) {
   const d = db();
+  if (novo === 'em_processo') throw erro('"Em processo" muda sozinho quando você aprova uma solicitação (RN06).');
   if (novo === 'adotado' && !d.solicitacoes.some((s) => s.animalId === a.id && s.status === 'concluida')) {
     throw erro('O animal só fica "adotado" quando uma adoção é concluída. Conclua a adoção na tela da solicitação (RN06).');
   }

@@ -189,7 +189,7 @@ Na Sprint 06, `GET /ia/recomendacoes` também passou a devolver `motor` (`opencl
 | GET | `/admin/animais?status=&especie=` | animais de todas as ONGs, com `ong` |
 | GET | `/admin/solicitacoes` | histórico completo |
 | GET | `/admin/estatisticas` | ver abaixo |
-| GET | `/admin/logs?limite=` | **Sprint 07 (opcional, para o back):** lê a tabela `log_acao`. Formato abaixo. Enquanto não existir (404), o front monta o histórico de operações com as outras rotas |
+| GET | `/admin/logs?de=&ate=&entidade=&acao=&usuario=&limite=` | **Sprint 08:** lê a tabela `log_acao` (mais recentes primeiro, `limite` padrão 5000). Formato abaixo |
 
 ```json
 [ { "id": 120, "criadoEm": "2026-10-30T14:02:11", "acao": "solicitacao.aprovada", "entidade": "solicitacao",
@@ -198,8 +198,11 @@ Na Sprint 06, `GET /ia/recomendacoes` também passou a devolver `motor` (`opencl
 ```
 
 > **Sprint 08 — erros do banco:** os triggers do script `10` usam `SIGNAL SQLSTATE '45000'` com mensagem em português
-> (ex.: "Animal com solicitação em aberto não pode ser excluído (RN08)."). O backend pode capturar o erro 1644 e
-> devolver **409** com essa mensagem em `detail`; o front já mostra o `detail` no aviso.
+> (ex.: "Animal com solicitação em aberto não pode ser excluído (RN08)."). O backend captura o erro 1644 e
+> devolve **409** com essa mensagem em `detail`; o front mostra o `detail` no aviso.
+
+> **Sprint 08 — paginação:** as listas aceitam `?limit=` (1 a 1000) e `&offset=`. Sem `limit`, vem a lista inteira
+> (o dashboard e os relatórios usam assim). Ex.: `GET /animais?limit=20&offset=40`.
 
 ```json
 { "totais": { "animaisDisponiveis": 9, "emProcesso": 2, "adotados": 1, "adotantes": 3,
