@@ -70,4 +70,18 @@ export const validadores = {
   email: (v) => (!v ? 'Informe o e-mail.' : !/^\S+@\S+\.\S+$/.test(v) ? 'E-mail inválido.' : null),
   obrigatorio: (v, nome = 'Campo') => (v === '' || v == null ? `${nome} é obrigatório.` : null),
   senha: (v) => (!v ? 'Informe a senha.' : v.length < 6 ? 'A senha precisa ter pelo menos 6 caracteres.' : null),
+  // Sprint 09 (bug B02): além do formato, confere os dígitos verificadores, igual ao backend
+  cnpj: (v) => (!v ? 'Informe o CNPJ.' : !cnpjValido(v) ? 'CNPJ inválido. Confira os 14 números (00.000.000/0000-00).' : null),
 };
+
+/** CNPJ com 14 dígitos e dígitos verificadores corretos. */
+export function cnpjValido(cnpj) {
+  const n = String(cnpj || '').replace(/\D/g, '');
+  if (n.length !== 14 || /^(\d)\1+$/.test(n)) return false;
+  const digito = (base) => {
+    const pesos = base.length === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const resto = [...base].reduce((s, c, i) => s + Number(c) * pesos[i], 0) % 11;
+    return String(resto < 2 ? 0 : 11 - resto);
+  };
+  return n[12] === digito(n.slice(0, 12)) && n[13] === digito(n.slice(0, 13));
+}

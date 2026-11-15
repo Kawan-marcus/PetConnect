@@ -207,6 +207,20 @@ class CadastroOngRequest(BaseModel):
 
 
 
+def cnpj_valido(cnpj: str) -> bool:
+    """Sprint 09 (bug B02): confere os 14 dígitos e os dois dígitos verificadores do CNPJ."""
+    numeros = "".join(c for c in (cnpj or "") if c.isdigit())
+    if len(numeros) != 14 or numeros == numeros[0] * 14:
+        return False
+
+    def digito(base: str) -> str:
+        pesos = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] if len(base) == 12 else [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        resto = sum(int(n) * p for n, p in zip(base, pesos)) % 11
+        return "0" if resto < 2 else str(11 - resto)
+
+    return numeros[12] == digito(numeros[:12]) and numeros[13] == digito(numeros[:13])
+
+
 def _log_login(usuario_id, acao, email, request):
     """Grava tentativas de login em log_acao (Sprint 06). A senha nunca vai para o log."""
     with engine.begin() as conexao:
@@ -647,6 +661,18 @@ def obter_me(
 
 
 
+                    u.telefone,
+
+
+
+                    u.cidade,
+
+
+
+                    u.criado_em,
+
+
+
                     u.ong_id,
 
 
@@ -804,6 +830,10 @@ def obter_me(
 
 
         "perfil": usuario["perfil"],
+        # Sprint 09 (bug B01): telefone e cidade não voltavam e a tela de perfil abria vazia
+        "telefone": usuario["telefone"],
+        "cidade": usuario["cidade"],
+        "criadoEm": usuario["criado_em"].isoformat() if usuario["criado_em"] else None,
 
 
 
@@ -1468,6 +1498,9 @@ def cadastrar_ong(dados: CadastroOngRequest):
 
 
     cnpj = dados.cnpj.strip()
+
+    if not cnpj_valido(cnpj):
+        raise HTTPException(status_code=400, detail="CNPJ inválido. Confira os 14 números (00.000.000/0000-00).")
 
 
 

@@ -51,6 +51,14 @@ def obter_formulario(
     usuario_id: int = Depends(obter_usuario_id_token)
 ):
     with engine.connect() as conexao:
+        # Sprint 09 (bug B05): ONG e administrador também liam /formulario
+        perfil = conexao.execute(
+            text("SELECT perfil FROM usuario WHERE id = :usuario_id"),
+            {"usuario_id": usuario_id}
+        ).scalar()
+        if perfil != "adotante":
+            raise HTTPException(status_code=403, detail="O formulário de avaliação é exclusivo para adotantes.")
+
         formulario = conexao.execute(
             text("""
                 SELECT *

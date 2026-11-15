@@ -1,0 +1,3125 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PetConnect API",
+    "description": "\nAPI REST do **PetConnect**, plataforma de adoção responsável de cães e gatos.\n\n**Autenticação:** faça `POST /api/auth/login` e envie o token no cabeçalho\n`Authorization: Bearer <token>`. Clique em *Authorize* para testar as rotas protegidas.\n\n**Erros:** sempre `{\"detail\": \"mensagem\"}` — 400 dado inválido, 401 sem login,\n403 sem permissão, 404 não encontrado, 409 regra de negócio, 422 formato inválido.\n",
+    "version": "1.0.0-rc"
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Entrar (devolve o token JWT)",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Dados do usuário logado",
+        "operationId": "obter_me_api_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Atualizar nome, telefone, cidade ou senha",
+        "operationId": "atualizar_me_api_auth_me_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarPerfilRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/auth/cadastro/adotante": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Criar conta de adotante",
+        "operationId": "cadastrar_adotante_api_auth_cadastro_adotante_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroAdotanteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/cadastro/ong": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Criar conta de ONG (fica pendente de aprovação)",
+        "operationId": "cadastrar_ong_api_auth_cadastro_ong_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroOngRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/animais": {
+      "get": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Catálogo de animais disponíveis, com filtros e busca",
+        "operationId": "listar_animais_api_animais_get",
+        "parameters": [
+          {
+            "name": "especie",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Especie"
+            }
+          },
+          {
+            "name": "porte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Porte"
+            }
+          },
+          {
+            "name": "sexo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sexo"
+            }
+          },
+          {
+            "name": "idade",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idade"
+            }
+          },
+          {
+            "name": "busca",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Busca"
+            }
+          },
+          {
+            "name": "ordenar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "recentes",
+              "title": "Ordenar"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/animais/{animal_id}": {
+      "get": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Detalhe de um animal",
+        "operationId": "obter_animal_api_animais__animal_id__get",
+        "parameters": [
+          {
+            "name": "animal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Animal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Editar animal (ONG dona)",
+        "operationId": "atualizar_animal_api_animais__animal_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "animal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Animal Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimalUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Remover anúncio (sem pedidos em aberto)",
+        "operationId": "remover_animal_api_animais__animal_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "animal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Animal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/animais/{animal_id}/status": {
+      "patch": {
+        "tags": [
+          "Animais"
+        ],
+        "summary": "Voltar o animal para disponível",
+        "operationId": "alterar_status_animal_api_animais__animal_id__status_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "animal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Animal Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimalStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/formulario": {
+      "get": {
+        "tags": [
+          "Formulário"
+        ],
+        "summary": "Ler o formulário de avaliação do adotante",
+        "operationId": "obter_formulario_api_formulario_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Formulário"
+        ],
+        "summary": "Salvar o formulário de avaliação",
+        "operationId": "salvar_formulario_api_formulario_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormularioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/favoritos": {
+      "get": {
+        "tags": [
+          "Favoritos"
+        ],
+        "summary": "Animais favoritos",
+        "operationId": "listar_favoritos_api_favoritos_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/favoritos/ids": {
+      "get": {
+        "tags": [
+          "Favoritos"
+        ],
+        "summary": "Só os ids dos favoritos (para os corações)",
+        "operationId": "listar_ids_favoritos_api_favoritos_ids_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/favoritos/{animal_id}": {
+      "post": {
+        "tags": [
+          "Favoritos"
+        ],
+        "summary": "Favoritar ou desfavoritar",
+        "operationId": "alternar_favorito_api_favoritos__animal_id__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "animal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Animal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ong/animais": {
+      "get": {
+        "tags": [
+          "ONG"
+        ],
+        "summary": "Animais da ONG logada",
+        "operationId": "listar_animais_da_ong_api_ong_animais_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ONG"
+        ],
+        "summary": "Cadastrar animal (ONG aprovada)",
+        "operationId": "cadastrar_animal_api_ong_animais_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ong/solicitacoes": {
+      "get": {
+        "tags": [
+          "ONG"
+        ],
+        "summary": "Pedidos recebidos pela ONG",
+        "operationId": "listar_solicitacoes_da_ong_api_ong_solicitacoes_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/uploads/fotos": {
+      "post": {
+        "tags": [
+          "Uploads"
+        ],
+        "summary": "Enviar foto de animal",
+        "operationId": "enviar_foto_api_uploads_fotos_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_enviar_foto_api_uploads_fotos_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/compatibilidade/{animal_id}": {
+      "get": {
+        "tags": [
+          "IA / Compatibilidade"
+        ],
+        "summary": "Compatibilidade adotante × animal",
+        "operationId": "obter_compatibilidade_api_ia_compatibilidade__animal_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "animal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Animal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/recomendacoes": {
+      "get": {
+        "tags": [
+          "IA / Compatibilidade"
+        ],
+        "summary": "Animais recomendados para o adotante",
+        "operationId": "obter_recomendacoes_api_ia_recomendacoes_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 9,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/modelo": {
+      "get": {
+        "tags": [
+          "IA / Compatibilidade"
+        ],
+        "summary": "Informações do modelo de IA em uso",
+        "operationId": "obter_modelo_api_ia_modelo_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes": {
+      "post": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Pedir adoção",
+        "operationId": "solicitar_adocao_api_solicitacoes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitarAdocaoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/solicitacoes/minhas": {
+      "get": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Pedidos do adotante logado",
+        "operationId": "minhas_solicitacoes_api_solicitacoes_minhas_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes/{solicitacao_id}/cancelar": {
+      "post": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Cancelar pedido (adotante)",
+        "operationId": "cancelar_solicitacao_api_solicitacoes__solicitacao_id__cancelar_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "solicitacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Solicitacao Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes/{solicitacao_id}/analisar": {
+      "post": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Colocar pedido em análise (ONG)",
+        "operationId": "analisar_solicitacao_api_solicitacoes__solicitacao_id__analisar_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "solicitacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Solicitacao Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes/{solicitacao_id}/recusar": {
+      "post": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Recusar pedido com motivo",
+        "operationId": "recusar_solicitacao_api_solicitacoes__solicitacao_id__recusar_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "solicitacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Solicitacao Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecusarSolicitacaoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes/{solicitacao_id}/aprovar": {
+      "post": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Aprovar pedido; encerra os outros do mesmo animal",
+        "operationId": "aprovar_solicitacao_api_solicitacoes__solicitacao_id__aprovar_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "solicitacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Solicitacao Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AprovarSolicitacaoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes/{solicitacao_id}/concluir": {
+      "post": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Concluir adoção; animal fica adotado",
+        "operationId": "concluir_adocao_api_solicitacoes__solicitacao_id__concluir_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "solicitacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Solicitacao Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConcluirAdocaoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes/{solicitacao_id}": {
+      "get": {
+        "tags": [
+          "Solicitações"
+        ],
+        "summary": "Detalhe e linha do tempo de um pedido",
+        "operationId": "obter_solicitacao_api_solicitacoes__solicitacao_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "solicitacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Solicitacao Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ong/adocoes": {
+      "get": {
+        "tags": [
+          "Acompanhamento pós-adoção"
+        ],
+        "summary": "Adoções concluídas e acompanhamentos",
+        "operationId": "listar_adocoes_da_ong_api_ong_adocoes_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/solicitacoes/{solicitacao_id}/acompanhamentos": {
+      "post": {
+        "tags": [
+          "Acompanhamento pós-adoção"
+        ],
+        "summary": "Registrar acompanhamento pós-adoção",
+        "operationId": "registrar_acompanhamento_api_solicitacoes__solicitacao_id__acompanhamentos_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "solicitacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Solicitacao Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcompanhamentoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notificacoes": {
+      "get": {
+        "tags": [
+          "Notificações"
+        ],
+        "summary": "Notificações do usuário",
+        "operationId": "listar_notificacoes_api_notificacoes_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notificacoes/marcar-lidas": {
+      "post": {
+        "tags": [
+          "Notificações"
+        ],
+        "summary": "Marcar todas as notificações como lidas",
+        "operationId": "marcar_notificacoes_lidas_api_notificacoes_marcar_lidas_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/usuarios": {
+      "get": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Listar usuários (filtro por perfil e busca)",
+        "operationId": "listar_usuarios_api_admin_usuarios_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "perfil",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Perfil"
+            }
+          },
+          {
+            "name": "busca",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Busca"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/usuarios/{alvo_id}": {
+      "patch": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Ativar ou desativar conta",
+        "operationId": "atualizar_usuario_api_admin_usuarios__alvo_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alvo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Alvo Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarUsuarioRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ongs": {
+      "get": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Listar ONGs",
+        "operationId": "listar_ongs_api_admin_ongs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ongs/{ong_id}/status": {
+      "patch": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Aprovar, suspender ou voltar ONG para análise",
+        "operationId": "alterar_status_ong_api_admin_ongs__ong_id__status_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ong_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Ong Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarStatusOngRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/animais": {
+      "get": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Todos os animais da plataforma",
+        "operationId": "listar_todos_animais_api_admin_animais_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "especie",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Especie"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/animais/{animal_id}": {
+      "delete": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Remover anúncio de qualquer ONG",
+        "operationId": "remover_animal_api_admin_animais__animal_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "animal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Animal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/solicitacoes": {
+      "get": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Todos os pedidos, com histórico",
+        "operationId": "listar_todas_solicitacoes_api_admin_solicitacoes_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 1000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Itens por página (opcional; sem ele vem tudo)",
+              "title": "Limit"
+            },
+            "description": "Itens por página (opcional; sem ele vem tudo)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Quantos itens pular",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Quantos itens pular"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/estatisticas": {
+      "get": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Números do dashboard",
+        "operationId": "estatisticas_api_admin_estatisticas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/desempenho": {
+      "get": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Medições sequencial × OpenCL",
+        "operationId": "desempenho_api_admin_desempenho_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/logs": {
+      "get": {
+        "tags": [
+          "Administração"
+        ],
+        "summary": "Histórico de operações (logs)",
+        "operationId": "listar_logs_api_admin_logs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "de",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "De"
+            }
+          },
+          {
+            "name": "ate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ate"
+            }
+          },
+          {
+            "name": "entidade",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entidade"
+            }
+          },
+          {
+            "name": "acao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Acao"
+            }
+          },
+          {
+            "name": "usuario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Usuario"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20000,
+              "minimum": 1,
+              "description": "Máximo de registros (mais recentes primeiro)",
+              "default": 5000,
+              "title": "Limite"
+            },
+            "description": "Máximo de registros (mais recentes primeiro)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/recuperar-senha": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Pedir código para redefinir a senha",
+        "operationId": "recuperar_senha_api_auth_recuperar_senha_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecuperarSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/redefinir-senha": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Redefinir a senha com o código",
+        "operationId": "redefinir_senha_api_auth_redefinir_senha_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedefinirSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api": {
+      "get": {
+        "summary": "Informações da API",
+        "operationId": "inicio_api_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health/db": {
+      "get": {
+        "summary": "Teste de conexão com o banco",
+        "operationId": "verificar_banco_api_health_db_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AcompanhamentoRequest": {
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "data": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Data"
+          },
+          "observacao": {
+            "type": "string",
+            "title": "Observacao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "data",
+          "observacao"
+        ],
+        "title": "AcompanhamentoRequest"
+      },
+      "AlterarStatusOngRequest": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "AlterarStatusOngRequest"
+      },
+      "AnimalRequest": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "especie": {
+            "type": "string",
+            "title": "Especie"
+          },
+          "raca": {
+            "type": "string",
+            "title": "Raca"
+          },
+          "idadeMeses": {
+            "type": "integer",
+            "title": "Idademeses"
+          },
+          "sexo": {
+            "type": "string",
+            "title": "Sexo"
+          },
+          "porte": {
+            "type": "string",
+            "title": "Porte"
+          },
+          "energia": {
+            "type": "string",
+            "title": "Energia"
+          },
+          "convivenciaCriancas": {
+            "type": "boolean",
+            "title": "Convivenciacriancas"
+          },
+          "convivenciaAnimais": {
+            "type": "boolean",
+            "title": "Convivenciaanimais"
+          },
+          "castrado": {
+            "type": "boolean",
+            "title": "Castrado"
+          },
+          "vacinado": {
+            "type": "boolean",
+            "title": "Vacinado"
+          },
+          "descricao": {
+            "type": "string",
+            "title": "Descricao"
+          },
+          "fotos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fotos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "especie",
+          "raca",
+          "idadeMeses",
+          "sexo",
+          "porte",
+          "energia",
+          "convivenciaCriancas",
+          "convivenciaAnimais",
+          "castrado",
+          "vacinado",
+          "descricao",
+          "fotos"
+        ],
+        "title": "AnimalRequest"
+      },
+      "AnimalStatusRequest": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "AnimalStatusRequest"
+      },
+      "AnimalUpdateRequest": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "especie": {
+            "type": "string",
+            "title": "Especie"
+          },
+          "raca": {
+            "type": "string",
+            "title": "Raca"
+          },
+          "idadeMeses": {
+            "type": "integer",
+            "title": "Idademeses"
+          },
+          "sexo": {
+            "type": "string",
+            "title": "Sexo"
+          },
+          "porte": {
+            "type": "string",
+            "title": "Porte"
+          },
+          "energia": {
+            "type": "string",
+            "title": "Energia"
+          },
+          "convivenciaCriancas": {
+            "type": "boolean",
+            "title": "Convivenciacriancas"
+          },
+          "convivenciaAnimais": {
+            "type": "boolean",
+            "title": "Convivenciaanimais"
+          },
+          "castrado": {
+            "type": "boolean",
+            "title": "Castrado"
+          },
+          "vacinado": {
+            "type": "boolean",
+            "title": "Vacinado"
+          },
+          "descricao": {
+            "type": "string",
+            "title": "Descricao"
+          },
+          "fotos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fotos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "especie",
+          "raca",
+          "idadeMeses",
+          "sexo",
+          "porte",
+          "energia",
+          "convivenciaCriancas",
+          "convivenciaAnimais",
+          "castrado",
+          "vacinado",
+          "descricao",
+          "fotos"
+        ],
+        "title": "AnimalUpdateRequest"
+      },
+      "AprovarSolicitacaoRequest": {
+        "properties": {
+          "obs": {
+            "type": "string",
+            "title": "Obs",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "AprovarSolicitacaoRequest"
+      },
+      "AtualizarPerfilRequest": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "telefone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telefone"
+          },
+          "cidade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cidade"
+          },
+          "senha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Senha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome"
+        ],
+        "title": "AtualizarPerfilRequest"
+      },
+      "AtualizarUsuarioRequest": {
+        "properties": {
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ativo"
+        ],
+        "title": "AtualizarUsuarioRequest"
+      },
+      "Body_enviar_foto_api_uploads_fotos_post": {
+        "properties": {
+          "arquivo": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Arquivo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "arquivo"
+        ],
+        "title": "Body_enviar_foto_api_uploads_fotos_post"
+      },
+      "CadastroAdotanteRequest": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "senha": {
+            "type": "string",
+            "title": "Senha"
+          },
+          "telefone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telefone"
+          },
+          "cidade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cidade"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "email",
+          "senha"
+        ],
+        "title": "CadastroAdotanteRequest"
+      },
+      "CadastroOngRequest": {
+        "properties": {
+          "nomeOng": {
+            "type": "string",
+            "title": "Nomeong"
+          },
+          "nomeResponsavel": {
+            "type": "string",
+            "title": "Nomeresponsavel"
+          },
+          "cnpj": {
+            "type": "string",
+            "title": "Cnpj"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "telefone": {
+            "type": "string",
+            "title": "Telefone"
+          },
+          "cidade": {
+            "type": "string",
+            "title": "Cidade"
+          },
+          "senha": {
+            "type": "string",
+            "title": "Senha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nomeOng",
+          "nomeResponsavel",
+          "cnpj",
+          "email",
+          "telefone",
+          "cidade",
+          "senha"
+        ],
+        "title": "CadastroOngRequest"
+      },
+      "ConcluirAdocaoRequest": {
+        "properties": {
+          "obs": {
+            "type": "string",
+            "title": "Obs",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "ConcluirAdocaoRequest"
+      },
+      "FormularioRequest": {
+        "properties": {
+          "tipoMoradia": {
+            "type": "string",
+            "title": "Tipomoradia"
+          },
+          "temQuintal": {
+            "type": "boolean",
+            "title": "Temquintal"
+          },
+          "telaProtecao": {
+            "type": "boolean",
+            "title": "Telaprotecao"
+          },
+          "pessoasCasa": {
+            "type": "integer",
+            "title": "Pessoascasa"
+          },
+          "temCriancas": {
+            "type": "boolean",
+            "title": "Temcriancas"
+          },
+          "outrosAnimais": {
+            "type": "boolean",
+            "title": "Outrosanimais"
+          },
+          "horasSozinho": {
+            "type": "integer",
+            "title": "Horassozinho"
+          },
+          "experiencia": {
+            "type": "string",
+            "title": "Experiencia"
+          },
+          "nivelAtividade": {
+            "type": "string",
+            "title": "Nivelatividade"
+          },
+          "motivacao": {
+            "type": "string",
+            "title": "Motivacao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipoMoradia",
+          "temQuintal",
+          "telaProtecao",
+          "pessoasCasa",
+          "temCriancas",
+          "outrosAnimais",
+          "horasSozinho",
+          "experiencia",
+          "nivelAtividade",
+          "motivacao"
+        ],
+        "title": "FormularioRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "senha": {
+            "type": "string",
+            "title": "Senha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "senha"
+        ],
+        "title": "LoginRequest"
+      },
+      "RecuperarSenhaRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "RecuperarSenhaRequest"
+      },
+      "RecusarSolicitacaoRequest": {
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "title": "Motivo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "motivo"
+        ],
+        "title": "RecusarSolicitacaoRequest"
+      },
+      "RedefinirSenhaRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "novaSenha": {
+            "type": "string",
+            "title": "Novasenha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "novaSenha"
+        ],
+        "title": "RedefinirSenhaRequest"
+      },
+      "SolicitarAdocaoRequest": {
+        "properties": {
+          "animalId": {
+            "type": "integer",
+            "title": "Animalid"
+          },
+          "mensagem": {
+            "type": "string",
+            "title": "Mensagem",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "animalId"
+        ],
+        "title": "SolicitarAdocaoRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ]
+}

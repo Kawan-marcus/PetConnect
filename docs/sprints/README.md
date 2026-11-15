@@ -13,3 +13,5 @@ O documento é acumulado: cada versão contém todas as Sprints anteriores e a a
 - **Sprint 08 (front):** controle de permissões, usabilidade e revisão das regras em [`SPRINT08_FRONT.md`](SPRINT08_FRONT.md).
 - **Sprint 08 (banco de dados):** usuário somente leitura, log imutável e regras de negócio no banco em [`SPRINT08_BANCO.md`](SPRINT08_BANCO.md). Scripts `database/10` e `11`.
 - **Sprint 08 (back-end):** permissões, regras revisadas, logs e paginação em [`SPRINT08_BACK.md`](SPRINT08_BACK.md).
+- **Sprint 09:** testes funcionais, de validação e de navegação (122 casos automatizados), bugs corrigidos e documentação atualizada em [`SPRINT09.md`](SPRINT09.md).
+- **Sprint 10:** Release Candidate 1.0.0-rc — sistema estável, interface final, banco final, API documentada e README em [`SPRINT10.md`](SPRINT10.md).

@@ -242,6 +242,12 @@ def cadastrar_animal(
             detail="Informe a raça do animal."
         )
 
+    if dados.idadeMeses > 300:
+
+        # Sprint 09 (bug B03): aceitava idades absurdas (ex.: 600 meses = 50 anos)
+
+        raise HTTPException(status_code=400, detail="Idade inválida: informe no máximo 25 anos (300 meses).")
+
     if dados.idadeMeses <= 0:
         raise HTTPException(
             status_code=400,
