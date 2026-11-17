@@ -64,6 +64,8 @@ Listas aceitam `?limit=` (1 a 1000) e `&offset=`. Sem `limit`, vem a lista intei
 | GET | `/api/ia/compatibilidade/{animal_id}` | adotante | Compatibilidade adotante × animal |
 | GET | `/api/ia/recomendacoes` | adotante | Animais recomendados para o adotante |
 | GET | `/api/ia/modelo` | logado | Informações do modelo de IA em uso |
+| POST | `/api/ia/classificar-imagem` | ong | Sugerir espécie, raça e porte pela foto (ONG) |
+| PATCH | `/api/ia/classificacoes/{classificacao_id}` | ong | Registrar se a ONG aplicou a sugestão da foto |
 | POST | `/api/solicitacoes` | adotante | Pedir adoção |
 | GET | `/api/solicitacoes/minhas` | adotante | Pedidos do adotante logado |
 | POST | `/api/solicitacoes/{solicitacao_id}/cancelar` | adotante | Cancelar pedido (adotante) |
@@ -116,7 +118,7 @@ Exemplo: `GET /api/auth/me`
   "perfil": "adotante",
   "telefone": "(62) 91234-5678",
   "cidade": "Goiânia - GO",
-  "criadoEm": "2026-10-06T13:00:17",
+  "criadoEm": "2026-10-06T18:31:50",
   "ongId": null,
   "ong": null
 }
@@ -214,35 +216,37 @@ Exemplo: `GET /api/animais?especie=cao&limit=2`
 ```json
 [
   {
-    "id": 96,
-    "ongId": 13,
-    "nome": "Primeiro",
+    "id": 12,
+    "ongId": 2,
+    "nome": "Belinha",
     "especie": "cao",
-    "raca": "SRD",
-    "idadeMeses": 18,
-    "sexo": "M",
-    "porte": "medio",
-    "energia": "media",
+    "raca": "Poodle",
+    "idadeMeses": 110,
+    "sexo": "F",
+    "porte": "pequeno",
+    "energia": "baixa",
     "convivenciaCriancas": true,
     "convivenciaAnimais": true,
     "castrado": true,
     "vacinado": true,
-    "descricao": "Cão dócil e brincalhão, ótimo com crianças.",
+    "descricao": "Senhorinha doce que só quer um sofá e carinho.",
     "fotos": [
-      "/animais/1-1.svg"
+      "/animais/12-1.svg",
+      "/animais/12-2.svg",
+      "/animais/12-3.svg"
     ],
     "status": "disponivel",
-    "criadoEm": "2026-11-15T13:05:27",
+    "criadoEm": "2026-10-30T18:31:50",
     "ong": {
-      "id": 13,
-      "nome": "ONG Teste 58716360e",
-      "cnpj": "78.587.163/6004-84",
-      "email": "ong58716360e@teste.com",
-      "telefone": "(62) 3333-4444",
-      "cidade": "Goiânia - GO",
-      "descricao": "ONG de teste",
+      "id": 2,
+      "nome": "Lar Animal",
+      "cnpj": "98.765.432/0001-10",
+      "email": "ola@laranimal.org",
+      "telefone": "(62) 98888-2222",
+      "cidade": "Anápolis - GO",
+      "descricao": "Abrigo com foco em gatos e animais idosos.",
       "status": "aprovada",
-      "criadoEm": "2026-11-15T13:05:26"
+      "criadoEm": "2026-06-18T18:31:50"
     }
   }
 ]
@@ -256,39 +260,39 @@ Exemplo: `GET /api/animais?especie=cao&limit=2`
 |---|---|---|---|
 | `animal_id` | caminho | integer | sim |
 
-Exemplo: `GET /api/animais/96`
+Exemplo: `GET /api/animais/49`
 
 ```json
 {
-  "id": 96,
-  "ongId": 13,
-  "nome": "Primeiro",
-  "especie": "cao",
-  "raca": "SRD",
-  "idadeMeses": 18,
+  "id": 49,
+  "ongId": 1,
+  "nome": "Biscoito",
+  "especie": "gato",
+  "raca": "Persa",
+  "idadeMeses": 60,
   "sexo": "M",
-  "porte": "medio",
-  "energia": "media",
+  "porte": "pequeno",
+  "energia": "alta",
   "convivenciaCriancas": true,
   "convivenciaAnimais": true,
   "castrado": true,
   "vacinado": true,
-  "descricao": "Cão dócil e brincalhão, ótimo com crianças.",
+  "descricao": "Animal resgatado, carinhoso e pronto para uma família. (dados de demonstração)",
   "fotos": [
-    "/animais/1-1.svg"
+    "/animais/4-1.svg"
   ],
   "status": "disponivel",
-  "criadoEm": "2026-11-15T13:05:27",
+  "criadoEm": "2026-10-31T15:05:51",
   "ong": {
-    "id": 13,
-    "nome": "ONG Teste 58716360e",
-    "cnpj": "78.587.163/6004-84",
-    "email": "ong58716360e@teste.com",
-    "telefone": "(62) 3333-4444",
+    "id": 1,
+    "nome": "Patinhas Felizes",
+    "cnpj": "12.345.678/0001-90",
+    "email": "contato@patinhas.org",
+    "telefone": "(62) 99999-1111",
     "cidade": "Goiânia - GO",
-    "descricao": "ONG de teste",
+    "descricao": "Resgate e reabilitação de cães e gatos desde 2015.",
     "status": "aprovada",
-    "criadoEm": "2026-11-15T13:05:26"
+    "criadoEm": "2026-04-29T18:31:50"
   }
 }
 ```
@@ -365,8 +369,8 @@ Exemplo: `GET /api/formulario`
   "experiencia": "alguma",
   "nivelAtividade": "medio",
   "motivacao": "Queremos um companheiro para a família e para as crianças.",
-  "criadoEm": "2026-10-26T13:00:17",
-  "atualizadoEm": "2026-10-26T13:00:17"
+  "criadoEm": "2026-10-26T18:31:50",
+  "atualizadoEm": "2026-10-26T18:31:50"
 }
 ```
 
@@ -473,26 +477,26 @@ Exemplo: `GET /api/ong/animais?limit=2`
 ```json
 [
   {
-    "id": 100,
+    "id": 49,
     "ongId": 1,
-    "nome": "E2E156464",
-    "especie": "cao",
-    "raca": "SRD",
-    "sexo": "F",
-    "idadeMeses": 24,
-    "porte": "medio",
-    "energia": "media",
+    "nome": "Biscoito",
+    "especie": "gato",
+    "raca": "Persa",
+    "sexo": "M",
+    "idadeMeses": 60,
+    "porte": "pequeno",
+    "energia": "alta",
     "castrado": true,
     "vacinado": true,
-    "descricao": "Cadela muito carinhosa, criada em teste automatizado de ponta a ponta.",
-    "status": "adotado",
+    "descricao": "Animal resgatado, carinhoso e pronto para uma família. (dados de demonstração)",
+    "status": "disponivel",
     "convivenciaCriancas": true,
     "convivenciaAnimais": true,
     "fotos": [
-      "http://127.0.0.1:8000/uploads/42a8fbaa4aa242439d3dec078a4acbf4.png"
+      "/animais/4-1.svg"
     ],
-    "criadoEm": "2026-11-15T13:31:20",
-    "atualizadoEm": "2026-11-15T13:31:43"
+    "criadoEm": "2026-10-31T15:05:51",
+    "atualizadoEm": "2026-11-15T18:31:51"
   }
 ]
 ```
@@ -534,20 +538,22 @@ Exemplo: `GET /api/ong/solicitacoes?limit=2`
 ```json
 [
   {
-    "id": 128,
-    "animalId": 100,
+    "id": 4,
+    "animalId": 1,
     "usuarioId": 2,
-    "status": "concluida",
-    "score": 97,
-    "mensagem": "Pedido feito pelo teste automatizado.",
+    "status": "em_analise",
+    "score": 74,
+    "mensagem": null,
     "motivoRecusa": null,
-    "criadoEm": "2026-11-15T13:31:30",
-    "atualizadoEm": "2026-11-15T13:31:43",
+    "criadoEm": "2026-11-12T18:31:50",
+    "atualizadoEm": "2026-11-15T18:31:50",
     "animal": {
-      "id": 100,
-      "nome": "E2E156464",
+      "id": 1,
+      "nome": "Thor",
       "fotos": [
-        "http://127.0.0.1:8000/uploads/42a8fbaa4aa242439d3dec078a4acbf4.png"
+        "/animais/1-1.svg",
+        "/animais/1-2.svg",
+        "/animais/1-3.svg"
       ]
     },
     "usuario": {
@@ -573,42 +579,63 @@ Exemplo: `GET /api/ong/adocoes?limit=2`
 ```json
 [
   {
-    "id": 128,
-    "animalId": 100,
-    "usuarioId": 2,
+    "id": 1,
+    "animalId": 5,
+    "usuarioId": 3,
     "status": "concluida",
-    "score": 97,
-    "mensagem": "Pedido feito pelo teste automatizado.",
+    "score": 71,
+    "mensagem": null,
     "motivoRecusa": null,
-    "criadoEm": "2026-11-15T13:31:30",
-    "atualizadoEm": "2026-11-15T13:31:43",
+    "criadoEm": "2026-10-16T18:31:50",
+    "atualizadoEm": "2026-11-15T18:31:50",
     "animal": {
-      "id": 100,
-      "nome": "E2E156464",
+      "id": 5,
+      "nome": "Bento",
       "especie": "cao",
-      "raca": "SRD",
-      "sexo": "F",
-      "idadeMeses": 24,
-      "porte": "medio",
+      "raca": "Labrador",
+      "sexo": "M",
+      "idadeMeses": 96,
+      "porte": "grande",
       "fotos": [
-        "http://127.0.0.1:8000/uploads/42a8fbaa4aa242439d3dec078a4acbf4.png"
+        "/animais/5-1.svg",
+        "/animais/5-2.svg",
+        "/animais/5-3.svg"
       ]
     },
     "usuario": {
-      "id": 2,
-      "nome": "Ana Souza",
-      "email": "ana@email.com",
-      "telefone": "(62) 91234-5678",
+      "id": 3,
+      "nome": "Carlos Lima",
+      "email": "carlos@email.com",
+      "telefone": "(62) 92345-6789",
       "cidade": "Goiânia - GO"
     },
     "historico": [
       {
         "status": "concluida",
-        "data": "2026-11-15T13:31:43",
+        "data": "2026-11-15T18:31:50",
         "obs": "Adoção concluída."
       }
     ],
-    "acompanhamentos": []
+    "acompanhamentos": [
+      {
+        "id": 2,
+        "solicitacaoId": 1,
+        "tipo": "contato",
+        "data": "2026-11-10T18:31:50",
+        "observacao": "Tutor enviou fotos; vacinas em dia.",
+        "registradoPor": 4,
+        "criadoEm": "2026-11-15T18:31:50"
+      },
+      {
+        "id": 1,
+        "solicitacaoId": 1,
+        "tipo": "visita",
+        "data": "2026-10-31T18:31:50",
+        "observacao": "Bento adaptado, dorme na sala e passeia duas vezes por dia.",
+        "registradoPor": 4,
+        "criadoEm": "2026-11-15T18:31:50"
+      }
+    ]
   }
 ]
 ```
@@ -636,11 +663,11 @@ Corpo (multipart/form-data):
 |---|---|---|---|
 | `animal_id` | caminho | integer | sim |
 
-Exemplo: `GET /api/ia/compatibilidade/96`
+Exemplo: `GET /api/ia/compatibilidade/49`
 
 ```json
 {
-  "score": 97,
+  "score": 89,
   "fatores": [
     {
       "chave": "espaco",
@@ -653,8 +680,8 @@ Exemplo: `GET /api/ia/compatibilidade/96`
       "chave": "energia",
       "nome": "Nível de energia × estilo de vida",
       "peso": 0.13,
-      "valor": 1.0,
-      "descricao": "Ritmo do adotante combina com a energia do animal."
+      "valor": 0.58,
+      "descricao": "Diferença moderada de ritmo."
     },
     {
       "chave": "rotina",
@@ -705,29 +732,29 @@ Exemplo: `GET /api/ia/recomendacoes`
   "itens": [
     {
       "animal": {
-        "id": 209,
-        "ongId": 1,
-        "nome": "Grão",
-        "especie": "cao",
-        "raca": "SRD",
+        "id": 60,
+        "ongId": 2,
+        "nome": "Jade",
+        "especie": "gato",
+        "raca": "Siamês",
         "porte": "medio",
-        "sexo": "M",
-        "idadeMeses": 94,
+        "sexo": "F",
+        "idadeMeses": 25,
         "energia": "media",
-        "castrado": true,
+        "castrado": false,
         "vacinado": true,
         "convivenciaCriancas": true,
         "convivenciaAnimais": false,
         "descricao": "Animal resgatado, carinhoso e pronto para uma família. (dados de demonstração)",
         "status": "disponivel",
         "fotos": [
-          "/animais/3-1.svg"
+          "/animais/2-1.svg"
         ],
         "ong": {
-          "id": 1,
-          "nome": "Patinhas Felizes",
-          "cidade": "Goiânia - GO",
-          "telefone": "(62) 99999-1111"
+          "id": 2,
+          "nome": "Lar Animal",
+          "cidade": "Anápolis - GO",
+          "telefone": "(62) 98888-2222"
         }
       },
       "score": 97,
@@ -777,11 +804,11 @@ Exemplo: `GET /api/ia/recomendacoes`
       ]
     }
   ],
-  "processados": 54,
-  "tempoMs": 0.374,
+  "processados": 38,
+  "tempoMs": 75.167,
   "modelo": "compat-logreg-v1",
-  "motor": "numpy",
-  "d
+  "motor": "opencl",
+  "
   …
 ```
 
@@ -840,10 +867,36 @@ Exemplo: `GET /api/ia/modelo`
       "peso": 0.09
     }
   ],
-  "motor": "numpy",
-  "dispositivo": "CPU (NumPy) — OpenCL indisponível: desativado em IA_MOTOR"
+  "motor": "opencl",
+  "dispositivo": "pthread-Intel(R) Xeon(R) Processor @ 2.10GHz (OpenCL 3.0 PoCL HSTR: pthread-x86_64-unknown-linux-gnu-icelake-client)"
 }
 ```
+
+### POST `/api/ia/classificar-imagem`
+
+**Quem pode:** ong
+
+Corpo (multipart/form-data):
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| `imagem` | string | sim |
+
+
+### PATCH `/api/ia/classificacoes/{classificacao_id}`
+
+**Quem pode:** ong
+
+| Parâmetro | Onde | Tipo | Obrigatório |
+|---|---|---|---|
+| `classificacao_id` | caminho | integer | sim |
+
+Corpo (application/json):
+
+| Campo | Tipo | Obrigatório |
+|---|---|---|
+| `aceita` | boolean | sim |
+
 
 ## Solicitações de adoção
 
@@ -873,23 +926,25 @@ Exemplo: `GET /api/solicitacoes/minhas?limit=2`
 ```json
 [
   {
-    "id": 128,
-    "animalId": 100,
+    "id": 4,
+    "animalId": 1,
     "usuarioId": 2,
-    "status": "concluida",
-    "score": 97,
-    "mensagem": "Pedido feito pelo teste automatizado.",
+    "status": "em_analise",
+    "score": 74,
+    "mensagem": null,
     "motivoRecusa": null,
-    "criadoEm": "2026-11-15T13:31:30",
-    "atualizadoEm": "2026-11-15T13:31:43",
+    "criadoEm": "2026-11-12T18:31:50",
+    "atualizadoEm": "2026-11-15T18:31:50",
     "animal": {
-      "id": 100,
-      "nome": "E2E156464",
+      "id": 1,
+      "nome": "Thor",
       "especie": "cao",
-      "raca": "SRD",
-      "status": "adotado",
+      "raca": "Vira-lata",
+      "status": "disponivel",
       "fotos": [
-        "http://127.0.0.1:8000/uploads/42a8fbaa4aa242439d3dec078a4acbf4.png"
+        "/animais/1-1.svg",
+        "/animais/1-2.svg",
+        "/animais/1-3.svg"
       ]
     },
     "ong": {
@@ -901,23 +956,13 @@ Exemplo: `GET /api/solicitacoes/minhas?limit=2`
     "historico": [
       {
         "status": "pendente",
-        "data": "2026-11-15T13:31:30",
+        "data": "2026-11-12T18:31:50",
         "obs": ""
       },
       {
         "status": "em_analise",
-        "data": "2026-11-15T13:31:40",
+        "data": "2026-11-13T18:31:50",
         "obs": ""
-      },
-      {
-        "status": "aprovada",
-        "data": "2026-11-15T13:31:41",
-        "obs": ""
-      },
-      {
-        "status": "concluida",
-        "data": "2026-11-15T13:31:43",
-        "obs": "Adoção concluída."
       }
     ]
   }
@@ -995,31 +1040,33 @@ Corpo (application/json):
 |---|---|---|---|
 | `solicitacao_id` | caminho | integer | sim |
 
-Exemplo: `GET /api/solicitacoes/128`
+Exemplo: `GET /api/solicitacoes/4`
 
 ```json
 {
-  "id": 128,
-  "animalId": 100,
+  "id": 4,
+  "animalId": 1,
   "usuarioId": 2,
-  "status": "concluida",
-  "score": 97,
-  "mensagem": "Pedido feito pelo teste automatizado.",
+  "status": "em_analise",
+  "score": 74,
+  "mensagem": null,
   "motivoRecusa": null,
-  "criadoEm": "2026-11-15T13:31:30",
-  "atualizadoEm": "2026-11-15T13:31:43",
+  "criadoEm": "2026-11-12T18:31:50",
+  "atualizadoEm": "2026-11-15T18:31:50",
   "animal": {
-    "id": 100,
-    "nome": "E2E156464",
+    "id": 1,
+    "nome": "Thor",
     "especie": "cao",
-    "raca": "SRD",
-    "sexo": "F",
-    "idadeMeses": 24,
-    "porte": "medio",
-    "energia": "media",
-    "status": "adotado",
+    "raca": "Vira-lata",
+    "sexo": "M",
+    "idadeMeses": 30,
+    "porte": "grande",
+    "energia": "alta",
+    "status": "disponivel",
     "fotos": [
-      "http://127.0.0.1:8000/uploads/42a8fbaa4aa242439d3dec078a4acbf4.png"
+      "/animais/1-1.svg",
+      "/animais/1-2.svg",
+      "/animais/1-3.svg"
     ]
   },
   "usuario": {
@@ -1042,7 +1089,7 @@ Exemplo: `GET /api/solicitacoes/128`
     "motivacao": "Queremos um companheiro para a família e para as crianças."
   },
   "compatibilidade": {
-    "score": 97,
+    "score": 87,
     "fatores": [
       {
         "chave": "espaco",
@@ -1055,8 +1102,8 @@ Exemplo: `GET /api/solicitacoes/128`
         "chave": "energia",
         "nome": "Nível de energia × estilo de vida",
         "peso": 0.13,
-        "valor": 1.0,
-        "descricao": "Ritmo do adotante combina com a energia do animal."
+        "valor": 0.58,
+        "descricao": "Diferença moderada de ritmo."
       },
       {
         "chave": "rotina",
@@ -1083,7 +1130,8 @@ Exemplo: `GET /api/solicitacoes/128`
         "chave": "experiencia",
         "nome": "Experiência do adotante",
         "peso": 0.09,
-        "va
+        "valor": 0.85,
+        "descricao": "Experiência compatíve
   …
 ```
 
@@ -1120,13 +1168,13 @@ Exemplo: `GET /api/notificacoes?limit=2`
 ```json
 [
   {
-    "id": 49,
+    "id": 1,
     "usuarioId": 2,
-    "texto": "A adoção de E2E156464 foi concluída com sucesso.",
+    "texto": "Sua solicitação para Paçoca foi aprovada!",
     "link": "/minhas-solicitacoes",
-    "lida": false,
-    "criadoEm": "2026-11-15T13:31:43",
-    "data": "2026-11-15T13:31:43"
+    "lida": true,
+    "criadoEm": "2026-11-13T18:31:50",
+    "data": "2026-11-13T18:31:50"
   }
 ]
 ```
@@ -1154,15 +1202,15 @@ Exemplo: `GET /api/admin/usuarios?limit=2`
 ```json
 [
   {
-    "id": 84,
-    "nome": "Responsável Teste",
-    "email": "ong58716360e@teste.com",
+    "id": 7,
+    "nome": "Voluntários 4 Patas",
+    "email": "amigos4patas@email.com",
     "perfil": "ong",
-    "telefone": "(62) 3333-4444",
-    "cidade": "Goiânia - GO",
+    "telefone": "(62) 97777-3333",
+    "cidade": "Aparecida de Goiânia - GO",
     "ativo": true,
-    "ongId": 13,
-    "criadoEm": "2026-11-15T13:05:27"
+    "ongId": 3,
+    "criadoEm": "2026-11-13T18:31:50"
   }
 ]
 ```
@@ -1197,17 +1245,17 @@ Exemplo: `GET /api/admin/ongs?limit=2`
 ```json
 [
   {
-    "id": 13,
-    "nome": "ONG Teste 58716360e",
-    "cnpj": "78.587.163/6004-84",
-    "email": "ong58716360e@teste.com",
-    "telefone": "(62) 3333-4444",
-    "cidade": "Goiânia - GO",
-    "descricao": "ONG de teste",
-    "status": "aprovada",
-    "criadoEm": "2026-11-15T13:05:26",
-    "totalAnimais": 31,
-    "totalAdocoes": 13
+    "id": 3,
+    "nome": "Amigos de Quatro Patas",
+    "cnpj": "11.222.333/0001-44",
+    "email": "amigos4patas@email.com",
+    "telefone": "(62) 97777-3333",
+    "cidade": "Aparecida de Goiânia - GO",
+    "descricao": "Grupo de voluntários recém-formado.",
+    "status": "pendente",
+    "criadoEm": "2026-11-13T18:31:50",
+    "totalAnimais": 0,
+    "totalAdocoes": 0
   }
 ]
 ```
@@ -1243,19 +1291,19 @@ Exemplo: `GET /api/admin/animais?limit=2`
 ```json
 [
   {
-    "id": 100,
+    "id": 49,
     "ongId": 1,
-    "nome": "E2E156464",
-    "especie": "cao",
-    "raca": "SRD",
-    "idadeMeses": 24,
-    "sexo": "F",
-    "porte": "medio",
-    "energia": "media",
-    "status": "adotado",
-    "criadoEm": "2026-11-15T13:31:20",
+    "nome": "Biscoito",
+    "especie": "gato",
+    "raca": "Persa",
+    "idadeMeses": 60,
+    "sexo": "M",
+    "porte": "pequeno",
+    "energia": "alta",
+    "status": "disponivel",
+    "criadoEm": "2026-10-31T15:05:51",
     "fotos": [
-      "http://127.0.0.1:8000/uploads/42a8fbaa4aa242439d3dec078a4acbf4.png"
+      "/animais/4-1.svg"
     ],
     "ong": {
       "id": 1,
@@ -1289,45 +1337,30 @@ Exemplo: `GET /api/admin/solicitacoes?limit=2`
 ```json
 [
   {
-    "id": 128,
-    "animalId": 100,
-    "usuarioId": 2,
-    "ongId": 1,
-    "status": "concluida",
-    "score": 97,
-    "criadoEm": "2026-11-15T13:31:30",
+    "id": 3,
+    "animalId": 2,
+    "usuarioId": 3,
+    "ongId": 2,
+    "status": "pendente",
+    "score": 80,
+    "criadoEm": "2026-11-14T18:31:50",
     "animal": {
-      "id": 100,
-      "nome": "E2E156464"
+      "id": 2,
+      "nome": "Luna"
     },
     "usuario": {
-      "id": 2,
-      "nome": "Ana Souza"
+      "id": 3,
+      "nome": "Carlos Lima"
     },
     "ong": {
-      "id": 1,
-      "nome": "Patinhas Felizes"
+      "id": 2,
+      "nome": "Lar Animal"
     },
     "historico": [
       {
         "status": "pendente",
-        "data": "2026-11-15T13:31:30",
+        "data": "2026-11-14T18:31:50",
         "obs": ""
-      },
-      {
-        "status": "em_analise",
-        "data": "2026-11-15T13:31:40",
-        "obs": ""
-      },
-      {
-        "status": "aprovada",
-        "data": "2026-11-15T13:31:41",
-        "obs": ""
-      },
-      {
-        "status": "concluida",
-        "data": "2026-11-15T13:31:43",
-        "obs": "Adoção concluída."
       }
     ]
   }
@@ -1343,15 +1376,15 @@ Exemplo: `GET /api/admin/estatisticas`
 ```json
 {
   "totais": {
-    "animaisDisponiveis": 54,
-    "emProcesso": 4,
-    "adotados": 35,
-    "adotantes": 70,
-    "ongsAprovadas": 5,
-    "ongsPendentes": 8,
-    "solicitacoesAbertas": 11
+    "animaisDisponiveis": 38,
+    "emProcesso": 3,
+    "adotados": 31,
+    "adotantes": 43,
+    "ongsAprovadas": 2,
+    "ongsPendentes": 1,
+    "solicitacoesAbertas": 9
   },
-  "tempoMedioAdocaoDias": 11,
+  "tempoMedioAdocaoDias": 14,
   "adocoesPorMes": [
     {
       "mes": "jun",
@@ -1359,50 +1392,35 @@ Exemplo: `GET /api/admin/estatisticas`
     },
     {
       "mes": "jul",
-      "adocoes": 1
+      "adocoes": 4
     },
     {
       "mes": "ago",
-      "adocoes": 2
-    },
-    {
-      "mes": "set",
       "adocoes": 6
     },
     {
+      "mes": "set",
+      "adocoes": 7
+    },
+    {
       "mes": "out",
-      "adocoes": 13
+      "adocoes": 8
     },
     {
       "mes": "nov",
-      "adocoes": 10
+      "adocoes": 3
     }
   ],
   "porOng": [
     {
       "ong": "Lar Animal",
-      "animais": 6,
-      "adocoes": 0
-    },
-    {
-      "ong": "ONG Teste 58628374e",
-      "animais": 1,
-      "adocoes": 0
-    },
-    {
-      "ong": "ONG Teste 58700298e",
-      "animais": 1,
-      "adocoes": 0
-    },
-    {
-      "ong": "ONG Teste 58716360e",
-      "animais": 31,
-      "adocoes": 13
+      "animais": 36,
+      "adocoes": 12
     },
     {
       "ong": "Patinhas Felizes",
-      "animais": 54,
-      "adocoes": 22
+      "animais": 36,
+      "adocoes": 19
     }
   ]
 }
@@ -1417,8 +1435,19 @@ Exemplo: `GET /api/admin/desempenho`
 ```json
 {
   "exemplo": false,
-  "dispositivo": "Nenhuma medição registrada ainda (tabela medicao_desempenho vazia).",
-  "medicoes": []
+  "dispositivo": "pthread-Intel(R) Xeon(R) Processor @ 2.10GHz (OpenCL 3.0 PoCL HSTR: pthread-x86_64-unknown-linux-gnu-icelake-client)",
+  "medicoes": [
+    {
+      "tarefa": "Score em lote (1 adotante × 10.000 animais) (10.000 itens)",
+      "sequencialMs": 55.837,
+      "openclMs": 0.581
+    },
+    {
+      "tarefa": "Score em lote (50 adotantes × 10.000 animais) (500.000 itens)",
+      "sequencialMs": 2024.0,
+      "openclMs": 14.895
+    }
+  ]
 }
 ```
 
@@ -1440,8 +1469,8 @@ Exemplo: `GET /api/admin/logs`
 ```json
 [
   {
-    "id": 1859,
-    "criadoEm": "2026-11-15T13:36:32",
+    "id": 538,
+    "criadoEm": "2026-11-15T18:34:09",
     "acao": "auth.login",
     "entidade": "usuario",
     "entidadeId": 1,

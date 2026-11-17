@@ -98,12 +98,12 @@ def main():
     for nome, A_t in tarefas:
         pares = len(A_t) * len(B)
         rep_seq = 1 if pares > 200_000 else 3
-        seq_ms, ref = medir(lambda: pontuar_sequencial(A_t, B, modelo), rep_seq)
-        np_ms, res_np = medir(lambda: pontuar_numpy(A_t, B, modelo), args.repeticoes)
+        seq_ms, ref = medir(lambda A_t=A_t: pontuar_sequencial(A_t, B, modelo), rep_seq)
+        np_ms, res_np = medir(lambda A_t=A_t: pontuar_numpy(A_t, B, modelo), args.repeticoes)
         assert np.abs(res_np - ref).max() < 0.01, "NumPy e sequencial deram resultados diferentes!"
         if tem_opencl:
             pontuar_opencl(A_t[:1], B[:8], modelo)   # aquecimento
-            ocl_ms, res_ocl = medir(lambda: pontuar_opencl(A_t, B, modelo), args.repeticoes)
+            ocl_ms, res_ocl = medir(lambda A_t=A_t: pontuar_opencl(A_t, B, modelo), args.repeticoes)
             assert np.abs(res_ocl - ref).max() < 0.01, "OpenCL e sequencial deram resultados diferentes!"
             ganho = seq_ms / ocl_ms
             print(f"{nome:52} {seq_ms:10.1f}ms {np_ms:8.1f}ms {ocl_ms:8.1f}ms {ganho:7.1f}×")

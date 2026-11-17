@@ -3,7 +3,7 @@
   "info": {
     "title": "PetConnect API",
     "description": "\nAPI REST do **PetConnect**, plataforma de adoção responsável de cães e gatos.\n\n**Autenticação:** faça `POST /api/auth/login` e envie o token no cabeçalho\n`Authorization: Bearer <token>`. Clique em *Authorize* para testar as rotas protegidas.\n\n**Erros:** sempre `{\"detail\": \"mensagem\"}` — 400 dado inválido, 401 sem login,\n403 sem permissão, 404 não encontrado, 409 regra de negócio, 422 formato inválido.\n",
-    "version": "1.0.0-rc"
+    "version": "1.0.0"
   },
   "paths": {
     "/api/auth/login": {
@@ -970,7 +970,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/ia/compatibilidade/{animal_id}": {
@@ -1077,6 +1082,105 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/classificar-imagem": {
+      "post": {
+        "tags": [
+          "IA / Compatibilidade"
+        ],
+        "summary": "Sugerir espécie, raça e porte pela foto (ONG)",
+        "operationId": "classificar_imagem_api_ia_classificar_imagem_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_classificar_imagem_api_ia_classificar_imagem_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/ia/classificacoes/{classificacao_id}": {
+      "patch": {
+        "tags": [
+          "IA / Compatibilidade"
+        ],
+        "summary": "Registrar se a ONG aplicou a sugestão da foto",
+        "operationId": "responder_sugestao_api_ia_classificacoes__classificacao_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "classificacao_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Classificacao Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespostaSugestao"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -2484,6 +2588,9 @@
     },
     "/api": {
       "get": {
+        "tags": [
+          "Sistema"
+        ],
         "summary": "Informações da API",
         "operationId": "inicio_api_get",
         "responses": {
@@ -2500,6 +2607,9 @@
     },
     "/api/health/db": {
       "get": {
+        "tags": [
+          "Sistema"
+        ],
         "summary": "Teste de conexão com o banco",
         "operationId": "verificar_banco_api_health_db_get",
         "responses": {
@@ -2789,6 +2899,20 @@
         ],
         "title": "AtualizarUsuarioRequest"
       },
+      "Body_classificar_imagem_api_ia_classificar_imagem_post": {
+        "properties": {
+          "imagem": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Imagem"
+          }
+        },
+        "type": "object",
+        "required": [
+          "imagem"
+        ],
+        "title": "Body_classificar_imagem_api_ia_classificar_imagem_post"
+      },
       "Body_enviar_foto_api_uploads_fotos_post": {
         "properties": {
           "arquivo": {
@@ -3045,6 +3169,19 @@
           "novaSenha"
         ],
         "title": "RedefinirSenhaRequest"
+      },
+      "RespostaSugestao": {
+        "properties": {
+          "aceita": {
+            "type": "boolean",
+            "title": "Aceita"
+          }
+        },
+        "type": "object",
+        "required": [
+          "aceita"
+        ],
+        "title": "RespostaSugestao"
       },
       "SolicitarAdocaoRequest": {
         "properties": {

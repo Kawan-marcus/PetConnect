@@ -1,5 +1,5 @@
 """
-Testes automatizados do PetConnect (Sprint 09).
+Testes automatizados do PetConnect (Sprints 09 a 12).
 
 Rodam a API de verdade (FastAPI TestClient) contra o banco configurado no
 backend/.env. O banco precisa ter os scripts 01, 02, 03, 05, 08 e 10 aplicados
@@ -7,7 +7,7 @@ backend/.env. O banco precisa ter os scripts 01, 02, 03, 05, 08 e 10 aplicados
 com nomes únicos, então podem ser repetidos.
 
     cd backend
-    pip install pytest
+    pip install pytest httpx2
     python -m pytest tests -v
 
 Ao final é gerado tests/RELATORIO.md com cada caso de teste:
@@ -35,6 +35,7 @@ TITULOS = {
     "animais": "Animais: cadastro, consulta, edição e exclusão", "adotante": "Área do adotante (formulário, favoritos, IA, notificações)",
     "solicitacoes": "Solicitações de adoção (fluxo e regras de negócio)", "admin": "Administração (contas, ONGs, logs)",
     "consultas_permissoes": "Consultas, paginação e permissões",
+    "ia_visao": "IA: sugestão pela foto (RF23) e envio de fotos",
 }
 
 

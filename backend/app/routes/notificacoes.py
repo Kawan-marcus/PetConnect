@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 
 from app.database import engine
@@ -86,8 +86,8 @@ def marcar_notificacoes_lidas(
             "atualizadas": resultado.rowcount
         }
 
-    except Exception:
+    except Exception as erro:
         raise HTTPException(
             status_code=500,
             detail="Não foi possível atualizar as notificações."
-        )
+        ) from erro

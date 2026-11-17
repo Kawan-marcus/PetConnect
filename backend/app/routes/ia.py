@@ -4,13 +4,19 @@ Rotas do módulo 3 (IA de compatibilidade).
 O cálculo fica em app/ia/ (modelo treinado + OpenCL). Aqui só ficam as rotas.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+import json
+
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from pydantic import BaseModel
 from sqlalchemy import text
 
 from app.database import engine
+from app.ia import visao
 from app.ia.modelo import carregar_modelo
 from app.ia.opencl import descricao_motor
 from app.ia.servico import avaliar, recomendar, salvar_analise
+from app.routes.ong import verificar_ong
+from app.routes.uploads import ler_imagem, salvar_imagem
 from app.security import obter_usuario_id_token
 
 router = APIRouter(
@@ -102,3 +108,73 @@ def obter_modelo():
         ],
         **descricao_motor(),
     }
+
+
+# ============================================================
+# POST /api/ia/classificar-imagem  (RF23)
+# A ONG envia a primeira foto do animal e recebe a sugestão de espécie, raça e
+# porte calculada pela rede MobileNetV2 (app/ia/visao.py). A sugestão fica
+# registrada em classificacao_imagem; a ONG confirma ou corrige no formulário.
+# ============================================================
+@router.post("/classificar-imagem")
+async def classificar_imagem(
+    request: Request,
+    imagem: UploadFile = File(...),
+    usuario_id: int = Depends(obter_usuario_id_token),
+):
+    with engine.connect() as conexao:
+        ong = verificar_ong(conexao, usuario_id)
+
+    conteudo = await ler_imagem(imagem)
+    try:
+        resultado = visao.classificar(conteudo)
+    except visao.ModeloIndisponivel as erro:
+        raise HTTPException(status_code=503, detail=str(erro)) from erro
+    except visao.FotoInvalida as erro:
+        raise HTTPException(status_code=422, detail=str(erro)) from erro
+
+    foto_url = salvar_imagem(conteudo, imagem.content_type, request)
+    with engine.begin() as conexao:
+        novo = conexao.execute(
+            text("""
+                INSERT INTO classificacao_imagem
+                    (ong_id, foto_url, especie_sugerida, especie_confianca, raca_sugerida,
+                     raca_confianca, raca_alternativas, porte_sugerido, porte_confianca, modelo, tempo_ms)
+                VALUES (:ong, :url, :esp, :esp_c, :raca, :raca_c, :alt, :porte, :porte_c, :modelo, :tempo)
+            """),
+            {
+                "ong": ong["ong_id"], "url": foto_url,
+                "esp": resultado["especie"]["valor"], "esp_c": resultado["especie"]["confianca"],
+                "raca": resultado["raca"]["valor"], "raca_c": resultado["raca"]["confianca"],
+                "alt": json.dumps(resultado["raca"]["alternativas"], ensure_ascii=False),
+                "porte": resultado["porte"]["valor"], "porte_c": resultado["porte"]["confianca"],
+                "modelo": resultado["modelo"], "tempo": resultado["tempoMs"],
+            },
+        )
+        resultado["id"] = novo.lastrowid
+    return resultado
+
+
+class RespostaSugestao(BaseModel):
+    aceita: bool
+
+
+# ============================================================
+# PATCH /api/ia/classificacoes/{id}
+# Registra se a ONG aplicou ou descartou a sugestão (mede a utilidade do modelo).
+# ============================================================
+@router.patch("/classificacoes/{classificacao_id}")
+def responder_sugestao(
+    classificacao_id: int,
+    dados: RespostaSugestao,
+    usuario_id: int = Depends(obter_usuario_id_token),
+):
+    with engine.begin() as conexao:
+        ong = verificar_ong(conexao, usuario_id)
+        alteradas = conexao.execute(
+            text("UPDATE classificacao_imagem SET aceita = :aceita WHERE id = :id AND ong_id = :ong"),
+            {"aceita": dados.aceita, "id": classificacao_id, "ong": ong["ong_id"]},
+        ).rowcount
+    if not alteradas:
+        raise HTTPException(status_code=404, detail="Sugestão não encontrada.")
+    return {"id": classificacao_id, "aceita": dados.aceita}

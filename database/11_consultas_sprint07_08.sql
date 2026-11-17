@@ -81,7 +81,7 @@ FROM log_acao GROUP BY acao ORDER BY vezes DESC;
 -- -----------------------------------------------------------------------------
 SELECT * FROM vw_matriz_permissoes;
 SHOW GRANTS FOR 'petconnect_relatorio'@'localhost';
--- Para testar: conecte como petconnect_relatorio (senha relatorio123) e rode
+-- Para testar: conecte como petconnect_relatorio (com a senha definida no ALTER USER do script 10) e rode
 --   SELECT * FROM petconnect.vw_rel_adocoes;   → funciona
 --   SELECT * FROM petconnect.usuario;          → ERRO 1142 (SELECT command denied)
 --   DELETE FROM petconnect.vw_rel_adocoes;     → ERRO 1142 (DELETE command denied)

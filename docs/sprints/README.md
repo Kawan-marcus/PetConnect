@@ -15,3 +15,5 @@ O documento é acumulado: cada versão contém todas as Sprints anteriores e a a
 - **Sprint 08 (back-end):** permissões, regras revisadas, logs e paginação em [`SPRINT08_BACK.md`](SPRINT08_BACK.md).
 - **Sprint 09:** testes funcionais, de validação e de navegação (122 casos automatizados), bugs corrigidos e documentação atualizada em [`SPRINT09.md`](SPRINT09.md).
 - **Sprint 10:** Release Candidate 1.0.0-rc — sistema estável, interface final, banco final, API documentada e README em [`SPRINT10.md`](SPRINT10.md).
+- **Sprint 11:** preparação para entrega — Manual do Usuário, Manual Técnico, documentação consolidada, revisão completa do código (R01 a R09) e sugestão pela foto (RF23) em [`SPRINT11.md`](SPRINT11.md).
+- **Sprint 12:** versão final 1.0.0 — code freeze, correção de bugs, ensaio técnico (106 + 25 testes, banco 14/14 OK) e planejamento dos vídeos em [`SPRINT12.md`](SPRINT12.md), com evidências em [`sprint12/`](sprint12/).

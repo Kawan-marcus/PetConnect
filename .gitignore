@@ -19,4 +19,8 @@ backend/uploads/*
 # Testes
 .pytest_cache/
 testes-e2e/resultado/
-testes-e2e/foto-teste.png
+
+
+# Modelo de visão (baixado com: python -m app.ia.baixar_modelo)
+backend/app/ia/modelos/*.onnx
+.ruff_cache/

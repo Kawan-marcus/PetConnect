@@ -1,6 +1,8 @@
 # PetConnect: Plataforma de Adoção Responsável de Animais
 
-**Versão 1.0.0-rc (Release Candidate)** · Fábrica de Software e Tópicos Avançados · 2026.2
+**Versão 1.0.0 (versão final, código congelado na tag `v1.0.0`)** · Fábrica de Software e Tópicos Avançados · 2026.2
+
+📘 [Manual do Usuário](docs/MANUAL_USUARIO.md) · 🛠️ [Manual Técnico](docs/MANUAL_TECNICO.md) · 📚 [Índice da documentação](docs/README.md) · 📝 [Histórico de versões](CHANGELOG.md)
 
 O PetConnect conecta cães e gatos resgatados por ONGs a adotantes compatíveis. O adotante preenche um formulário sobre a própria rotina, o sistema calcula a **compatibilidade** com cada animal usando um modelo de IA, e a ONG recebe os pedidos já com esse índice para decidir com mais segurança.
 
@@ -37,7 +39,7 @@ Muitas adoções dão errado porque o animal não combina com a rotina da famíl
 |---|---|---|
 | Interface | React 19, Vite 7, React Router 7, Axios | `src/`, `public/` |
 | API | Python 3.11+, FastAPI, SQLAlchemy, PyMySQL, JWT (PyJWT), bcrypt | `backend/` |
-| Inteligência artificial | scikit-learn (regressão logística), NumPy, OpenCL opcional para cálculo em lote | `backend/app/ia/` |
+| Inteligência artificial | scikit-learn (regressão logística) para a compatibilidade, OpenCL/NumPy para o cálculo em lote, MobileNetV2 + ONNX Runtime para a sugestão pela foto | `backend/app/ia/` |
 | Banco de dados | MySQL 8 (funciona também no MariaDB do XAMPP) | `database/` |
 | Testes | pytest (API) e Playwright (interface) | `backend/tests/`, `testes-e2e/` |
 
@@ -87,7 +89,10 @@ copy .env.example .env          # no Git Bash/Linux: cp .env.example .env
 python -m venv venv
 venv\Scripts\activate           # no Git Bash: source venv/Scripts/activate
 pip install -r requirements.txt
+python -m app.ia.baixar_modelo  # baixa o modelo de visão da sugestão pela foto (14 MB, uma vez)
 ```
+Opcional, para o cálculo em paralelo na placa de vídeo: `pip install -r requirements-opencl.txt` (detalhes no [Manual Técnico](docs/MANUAL_TECNICO.md#63-back-end)).
+
 Abra o `backend/.env` e preencha:
 
 | Variável | Exemplo | Para quê |
@@ -103,7 +108,7 @@ Abra o `backend/.env` e preencha:
 Na **raiz** do projeto:
 ```bash
 npm install
-copy .env.example .env          # deixe VITE_USE_MOCK=false para usar a API
+copy .env.example .env          # VITE_USE_MOCK=false (padrão): usa a API real
 ```
 
 ## Como executar
@@ -122,7 +127,7 @@ npm run dev
 - Documentação interativa da API (Swagger): **http://localhost:8000/docs**
 - Teste do banco: http://localhost:8000/api/health/db → `{"status": "conectado"}`
 
-> Com `VITE_USE_MOCK=true` o front funciona sozinho, com dados simulados no navegador (útil para desenvolver telas sem a API).
+> O front usa a API real por padrão. Só com `VITE_USE_MOCK=true` ele funciona sozinho, com dados simulados no navegador (útil apenas para desenvolver telas; não use na apresentação).
 
 ### Contas de teste (senha `123456`)
 
@@ -136,8 +141,8 @@ npm run dev
 ## Testes
 
 ```bash
-# API: 97 casos (funcionais, validação, regras e permissões) — dentro de backend/
-pip install pytest
+# API: 106 casos (funcionais, validação, regras, permissões e IA pela foto) — dentro de backend/
+pip install pytest httpx2                 # httpx2: cliente que os testes usam para chamar a API
 python -m pytest tests -v                  # gera backend/tests/RELATORIO.md
 
 # Interface: 25 casos (navegação, validação e fluxo completo) — com API e front ligados
@@ -164,7 +169,7 @@ PetConnect/
 │   ├── app/
 │   │   ├── main.py          criação da API, CORS e tratamento de erros
 │   │   ├── routes/          rotas: auth, animais, ong, solicitações, admin, ia…
-│   │   ├── ia/              modelo de compatibilidade e cálculo em lote (OpenCL)
+│   │   ├── ia/              compatibilidade, cálculo em lote (OpenCL) e sugestão pela foto
 │   │   ├── security.py      JWT e conferência da conta a cada requisição
 │   │   └── database.py      conexão com o MySQL
 │   ├── tests/               testes automatizados da API (pytest)
@@ -176,11 +181,14 @@ PetConnect/
 
 ## Documentação
 
+- [Manual do Usuário](docs/MANUAL_USUARIO.md) · [Manual Técnico](docs/MANUAL_TECNICO.md)
+- [Requisitos, regras de negócio e casos de uso](docs/REQUISITOS_E_CASOS_DE_USO.md)
 - [API — todas as rotas, parâmetros, autenticação e exemplos](docs/API.md) · [OpenAPI](docs/openapi.json) · [Contrato front ↔ back](docs/CONTRATO_API.md)
 - [Banco de dados — dicionário de dados final](docs/BANCO_DE_DADOS.md) · [scripts](database/README.md)
 - [Front-end](docs/FRONTEND.md)
 - [Documentação de cada Sprint](docs/sprints/)
-- Diagramas: [arquitetura](docs/diagramas/arquitetura.png) · [classes](docs/diagramas/diagrama_classes.png) · [MER](database/diagramas/mer_conceitual.png) · [relacional](database/diagramas/modelo_relacional.png)
+- [Apresentação e roteiro dos vídeos](docs/APRESENTACAO.md)
+- Diagramas: [arquitetura](docs/diagramas/arquitetura.png) · [casos de uso](docs/diagramas/casos_de_uso.png) · [classes](docs/diagramas/diagrama_classes.png) · [MER](database/diagramas/mer_conceitual.png) · [relacional](database/diagramas/modelo_relacional.png)
 
 ## Problemas comuns
 
@@ -190,3 +198,6 @@ PetConnect/
 | `Unknown database 'petconnect'` | rode os scripts do banco (passo 2) |
 | A tela fica em "Carregando" | a API não está ligada na porta 8000 |
 | "Sua sessão expirou" | entre de novo (acontece ao trocar o `JWT_SECRET`) |
+| "A sugestão pela foto ainda não está ativa" | rode `python -m app.ia.baixar_modelo` dentro de `backend/` |
+
+Mais situações no [Manual Técnico, seção 14](docs/MANUAL_TECNICO.md#14-solução-de-problemas).

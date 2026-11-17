@@ -215,7 +215,7 @@ def cnpj_valido(cnpj: str) -> bool:
 
     def digito(base: str) -> str:
         pesos = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] if len(base) == 12 else [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-        resto = sum(int(n) * p for n, p in zip(base, pesos)) % 11
+        resto = sum(int(n) * p for n, p in zip(base, pesos, strict=True)) % 11
         return "0" if resto < 2 else str(11 - resto)
 
     return numeros[12] == digito(numeros[:12]) and numeros[13] == digito(numeros[:13])

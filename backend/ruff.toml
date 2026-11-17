@@ -1,0 +1,8 @@
+# Configuração do analisador estático (ruff check app)
+line-length = 130
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "B"]
+# B008: File(...), Depends(...) e Query(...) nos parâmetros são o padrão do FastAPI.
+ignore = ["B008", "E501"]

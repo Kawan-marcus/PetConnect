@@ -20,5 +20,14 @@ export async function sugerirPorImagem(arquivo) {
   return api.upload('/ia/classificar-imagem', fd);
 }
 
+/**
+ * PATCH /ia/classificacoes/:id { aceita } → registra se a ONG aplicou a sugestão.
+ * Não bloqueia o formulário: se falhar, só deixa de registrar.
+ */
+export function responderSugestao(id, aceita) {
+  if (USE_MOCK || !id) return Promise.resolve();
+  return api.patch(`/ia/classificacoes/${id}`, { aceita }).catch(() => {});
+}
+
 /** GET /admin/desempenho → comparativo sequencial × OpenCL */
 export const desempenho = () => (USE_MOCK ? mock.desempenho() : api.get('/admin/desempenho'));

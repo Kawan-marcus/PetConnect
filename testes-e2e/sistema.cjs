@@ -1,5 +1,5 @@
 /**
- * Testes de navegação, validação e fluxo pela interface (Sprint 09).
+ * Testes de navegação, validação e fluxo pela interface (Sprints 09 a 12).
  *
  * Abre o PetConnect num navegador de verdade (Chromium) com o back-end e o banco
  * ligados, executa cada caso de teste, tira um print e gera RELATORIO.md.
@@ -184,23 +184,26 @@ const caso = (id, tipo, descricao, esperado, fn) => casos.push({ id, tipo, descr
 
   /* ───────── Fluxo completo pela interface ───────── */
   let animalFluxo = null;
-  caso('FX-01', 'Fluxo', 'ONG cadastra um animal pela tela', 'Animal salvo e listado em "Meus animais"', async () => {
+  caso('FX-01', 'Fluxo', 'ONG cadastra um animal pela tela usando a sugestão da IA pela foto (RF23)', 'A IA sugere espécie, raça e porte; animal salvo e listado em "Meus animais"', async () => {
     await entrar('ong@patinhas.org'); await ir('/ong/animais/novo');
     const nome = 'E2E' + SUF;
+    // Foto real de um cão: a IA (MobileNetV2 no back) devolve a sugestão e a ONG aplica.
+    await p.setInputFiles('input[type=file]', path.join(__dirname, '..', 'backend', 'tests', 'fotos', 'cao.jpg'));
+    await p.locator('text=Aplicar sugestão').waitFor({ timeout: 15000 });
+    const cartao = (await p.locator('.sugestao-ia').innerText()).replace(/\s+/g, ' ');
+    await p.click('text=Aplicar sugestão'); await p.waitForTimeout(400);
+    const raca = await p.inputValue('input[name=raca]');
     await p.fill('input[name=nome]', nome);
     const escolher = (nome, valor) => p.locator(`label:has(input[name=${nome}][value="${valor}"])`).first().click();
-    await escolher('especie', 'cao');
-    await p.fill('input[name=raca]', 'SRD'); await p.fill('input[name=idadeAnos]', '2');
-    await escolher('sexo', 'F'); await escolher('porte', 'medio'); await escolher('energia', 'media');
+    await p.fill('input[name=idadeAnos]', '2');
+    await escolher('sexo', 'F'); await escolher('energia', 'media');
     for (const n of ['convivenciaCriancas', 'convivenciaAnimais', 'castrado', 'vacinado']) await escolher(n, 'sim');
     await p.fill('textarea[name=descricao]', 'Cadela muito carinhosa, criada em teste automatizado de ponta a ponta.');
-    const foto = path.join(__dirname, 'foto-teste.png');
-    if (!fs.existsSync(foto)) fs.writeFileSync(foto, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'));
-    await p.setInputFiles('input[type=file]', foto); await p.waitForTimeout(1500);
     await p.click('form button:not([type=button])'); await p.waitForTimeout(1800);
     await ir('/ong/animais'); const txt = await textoDaPagina();
     animalFluxo = nome;
-    return { ok: txt.includes(nome), obtido: txt.includes(nome) ? `${nome} aparece em Meus animais` : `não apareceu (rota ${rotaAtual()})` };
+    const ok = txt.includes(nome) && raca === 'Pastor alemão';
+    return { ok, obtido: `sugestão: "${cartao.slice(0, 120)}" · raça aplicada: ${raca} · ${txt.includes(nome) ? `${nome} aparece em Meus animais` : `não apareceu (rota ${rotaAtual()})`}` };
   });
   caso('FX-02', 'Fluxo', 'Adotante encontra o animal no catálogo e solicita a adoção', 'Pedido enviado e visível em "Minhas solicitações" como Pendente', async () => {
     await entrar('ana@email.com'); await ir('/animais');

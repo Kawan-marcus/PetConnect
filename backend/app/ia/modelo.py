@@ -61,9 +61,9 @@ class Modelo:
     def pontuar_python(self, f):
         pior = min(f)
         if self.tipo == "ponderado":
-            bruto = sum(p * v for p, v in zip(self.coef[:N_FATORES], f))
+            bruto = sum(p * v for p, v in zip(self.coef[:N_FATORES], f, strict=True))
             return 100.0 * bruto * (0.7 + 0.3 * pior)
-        z = self.intercepto + sum(w * v for w, v in zip(self.coef[:N_FATORES], f)) + self.coef[N_FATORES] * pior
+        z = self.intercepto + sum(w * v for w, v in zip(self.coef[:N_FATORES], f, strict=True)) + self.coef[N_FATORES] * pior
         return 100.0 / (1.0 + math.exp(-z))
 
     # -- muitos pares de uma vez (NumPy): F tem formato (..., 6)

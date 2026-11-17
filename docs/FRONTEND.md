@@ -18,25 +18,19 @@ cp .env.example .env      # no Windows: copy .env.example .env
 npm run dev
 ```
 
-Abra http://localhost:5173.
+Abra http://localhost:5173. A partir da versão 1.0.0 o front usa **a API real por padrão** (`VITE_USE_MOCK=false`): suba o back-end na porta **8000** antes. O `vite.config.js` redireciona `/api` para `http://localhost:8000`, sem problema de CORS em desenvolvimento.
 
-### Contas de demonstração (modo mock)
+Contas de demonstração (senha `123456`): `ana@email.com` (adotante), `ong@patinhas.org` (ONG), `admin@adotapet.com` (admin).
 
-| Perfil   | E-mail               | Senha  |
-|----------|----------------------|--------|
-| Adotante | ana@email.com        | 123456 |
-| ONG      | ong@patinhas.org     | 123456 |
-| Admin    | admin@adotapet.com   | 123456 |
+### Modo demonstração (opcional)
 
-Na tela de login há botões para preencher essas contas automaticamente. A faixa escura no topo tem o botão **"Restaurar dados de exemplo"**, que apaga tudo o que foi alterado e volta ao estado inicial.
+Para mexer só nas telas sem o back-end, use `VITE_USE_MOCK=true` no `.env`. Os dados ficam simulados no navegador e uma faixa escura no topo avisa que é demonstração (com o botão **"Restaurar dados de exemplo"**). Esse modo não é usado na apresentação nem nos testes.
 
 ---
 
 ## Ligando no backend Python
 
-1. No `.env`, troque `VITE_USE_MOCK=true` para `VITE_USE_MOCK=false`.
-2. Suba o backend na porta **8000**. O `vite.config.js` já redireciona `/api` para `http://localhost:8000`, sem problema de CORS em desenvolvimento.
-3. O backend precisa seguir o contrato descrito em **[docs/CONTRATO_API.md](CONTRATO_API.md)**: endpoints, formato do JSON, estados da solicitação e respostas da IA.
+O back-end segue o contrato descrito em **[docs/CONTRATO_API.md](CONTRATO_API.md)** e detalhado em **[docs/API.md](API.md)**: endpoints, formato do JSON, estados da solicitação e respostas da IA.
 
 Cada função em `src/api/*.js` tem as duas versões lado a lado: a real (Axios) e a simulada (`src/api/mock/handlers.js`). Assim fica fácil ver o que o backend precisa devolver.
 

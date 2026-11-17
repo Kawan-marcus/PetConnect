@@ -1,0 +1,9 @@
+Modelo: compat-logreg-v1 | Animais: 10000 | Adotantes (tarefa 2): 50
+Dispositivo: pthread-Intel(R) Xeon(R) Processor @ 2.10GHz (OpenCL 3.0 PoCL HSTR: pthread-x86_64-unknown-linux-gnu-icelake-client)
+
+Tarefa                                                 Sequencial      NumPy     OpenCL    Ganho
+Score em lote (1 adotante × 10.000 animais)                55.8ms      1.8ms      0.6ms    96.0×
+Score em lote (50 adotantes × 10.000 animais)            2024.0ms     53.6ms     14.9ms   135.9×
+
+Resultados conferidos: as versões calculam o mesmo score para todos os pares.
+Medições gravadas em medicao_desempenho (aparecem no painel do admin).

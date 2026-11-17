@@ -1,5 +1,5 @@
 """
-Textos da documentação da API (Sprint 10).
+Textos da documentação da API (Sprints 10 a 12).
 
 O Swagger (http://localhost:8000/docs) e o docs/API.md usam estes resumos em português.
 Chave: (MÉTODO, rota).
@@ -41,6 +41,8 @@ RESUMOS = {
     ("GET", "/api/ia/compatibilidade/{animal_id}"): "Compatibilidade adotante × animal",
     ("GET", "/api/ia/recomendacoes"): "Animais recomendados para o adotante",
     ("GET", "/api/ia/modelo"): "Informações do modelo de IA em uso",
+    ("POST", "/api/ia/classificar-imagem"): "Sugerir espécie, raça e porte pela foto (ONG)",
+    ("PATCH", "/api/ia/classificacoes/{classificacao_id}"): "Registrar se a ONG aplicou a sugestão da foto",
     ("POST", "/api/solicitacoes"): "Pedir adoção",
     ("GET", "/api/solicitacoes/minhas"): "Pedidos do adotante logado",
     ("GET", "/api/solicitacoes/{solicitacao_id}"): "Detalhe e linha do tempo de um pedido",

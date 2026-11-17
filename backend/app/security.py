@@ -76,7 +76,7 @@ def obter_usuario_id_token(
         try:
             usuario_id = int(usuario_id)
         except (TypeError, ValueError):
-            raise HTTPException(status_code=401, detail="Token inválido.")
+            raise HTTPException(status_code=401, detail="Token inválido.") from None
 
         # Revalida a conta no banco em toda requisição autenticada.
         # Isso invalida imediatamente sessões de usuários desativados.
@@ -95,10 +95,10 @@ def obter_usuario_id_token(
         raise HTTPException(
             status_code=401,
             detail="Token expirado."
-        )
+        ) from None
 
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=401,
             detail="Token inválido."
-        )
+        ) from None
