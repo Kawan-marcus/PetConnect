@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useConfirmar } from '../../context/ConfirmarContext.jsx';
 import { pode } from '../../utils/permissoes.js';
 import { obterAnimal, criarAnimal, atualizarAnimal, enviarFoto } from '../../api/animais.js';
-import { sugerirPorImagem } from '../../api/ia.js';
+import { sugerirPorImagem, responderSugestao } from '../../api/ia.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { reduzirImagem } from '../../utils/imagem.js';
 import { ESPECIES, PORTES } from '../../utils/format.js';
@@ -140,7 +140,9 @@ export default function OngAnimalForm() {
             toast(
               [404, 405, 501].includes(e.status)
                 ? 'A sugestão automática pela foto ainda não está disponível. Preencha os campos normalmente.'
-                : `Não foi possível analisar a foto: ${e.message}`,
+                : [422, 503].includes(e.status)
+                  ? e.message
+                  : `Não foi possível analisar a foto: ${e.message}`,
               'erro',
             ),
           )
@@ -155,6 +157,7 @@ export default function OngAnimalForm() {
 
   const aplicarSugestao = () => {
     f.setValores((atual) => ({ ...atual, especie: sugestao.especie.valor, raca: sugestao.raca.valor, porte: sugestao.porte.valor }));
+    responderSugestao(sugestao.id, true);
     setSugestao(null);
     toast('Sugestão aplicada. Confira os campos.');
   };
@@ -231,7 +234,7 @@ export default function OngAnimalForm() {
             <input ref={inputFoto} type="file" accept="image/*" multiple hidden name="fotos" onChange={(e) => { adicionarFotos(e.target.files); e.target.value = ''; }} />
           </div>
           {erros.fotos && <span className="campo__erro">{erros.fotos}</span>}
-          <SugestaoIA sugestao={sugestao} analisando={analisando} onAplicar={aplicarSugestao} onDescartar={() => setSugestao(null)} />
+          <SugestaoIA sugestao={sugestao} analisando={analisando} onAplicar={aplicarSugestao} onDescartar={() => { responderSugestao(sugestao?.id, false); setSugestao(null); }} />
         </section>
 
         <section className="card form__secao">

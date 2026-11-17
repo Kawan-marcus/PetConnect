@@ -1,6 +1,6 @@
 # Relatório dos testes automatizados do back-end
 
-Gerado em 15/11/2026 13:40 · 97 de 97 casos passaram.
+Gerado em 16/11/2026 19:56 · 106 de 106 casos passaram.
 
 Comando: `python -m pytest tests -v` (dentro da pasta `backend`).
 
@@ -42,8 +42,8 @@ Comando: `python -m pytest tests -v` (dentro da pasta `backend`).
 
 | ID | Caso de teste | Resultado esperado | Resultado obtido | Situação |
 |---|---|---|---|---|
-| CT-21 | ONG aprovada cadastra um animal | 201/200, status "disponivel" e o animal aparece no catálogo | id 230, status disponivel, no catálogo: True | ✅ PASSOU |
-| CT-22 | Consultar o detalhe de um animal | 200 com dados do animal, fotos e ONG | 200, Rex3562, ONG Patinhas Felizes, 1 foto(s) | ✅ PASSOU |
+| CT-21 | ONG aprovada cadastra um animal | 201/200, status "disponivel" e o animal aparece no catálogo | id 99, status disponivel, no catálogo: True | ✅ PASSOU |
+| CT-22 | Consultar o detalhe de um animal | 200 com dados do animal, fotos e ONG | 200, Rex4975, ONG Patinhas Felizes, 1 foto(s) | ✅ PASSOU |
 | CT-23 | Consultar animal que não existe | 404 "Animal não encontrado." | 404 Animal não encontrado. | ✅ PASSOU |
 | CT-24 | ONG edita os dados do próprio animal | 200 e a descrição nova gravada | 200, descrição: Descrição atualizada pelo teste automatizado. | ✅ PASSOU |
 | CT-25 | ONG tenta editar animal de outra ONG | 403 ou 404 | 403 Você não pode editar um animal de outra ONG. | ✅ PASSOU |
@@ -61,7 +61,7 @@ Comando: `python -m pytest tests -v` (dentro da pasta `backend`).
 | CT-30 | ONG tenta remover animal com solicitação em aberto (RN08) | 409 com mensagem | 409 Não é possível remover um animal com solicitações em andamento. | ✅ PASSOU |
 | CT-31 | ONG pendente tenta cadastrar animal (RN04) | 403 | 403 A ONG precisa estar aprovada e ativa para realizar esta operação. | ✅ PASSOU |
 | CT-32 | Adotante tenta cadastrar animal | 403 | 403 | ✅ PASSOU |
-| CT-33 | Animal de ONG não aprovada não aparece no catálogo público | nenhum animal do catálogo pertence a ONG pendente/suspensa | 65 no catálogo, de ONG não aprovada: 0 | ✅ PASSOU |
+| CT-33 | Animal de ONG não aprovada não aparece no catálogo público | nenhum animal do catálogo pertence a ONG pendente/suspensa | 58 no catálogo, de ONG não aprovada: 0 | ✅ PASSOU |
 
 ## Área do adotante (formulário, favoritos, IA, notificações)
 
@@ -109,9 +109,9 @@ Comando: `python -m pytest tests -v` (dentro da pasta `backend`).
 | CT-63 | Administrador tenta desativar a própria conta | 409 | 409 Você não pode desativar a sua própria conta. | ✅ PASSOU |
 | CT-64 | Administrador aprova uma ONG pendente | 200 e a ONG passa a cadastrar animais | 200, cadastro de animal depois: 200 | ✅ PASSOU |
 | CT-65 | Mudar status de ONG para valor que não existe | 400 ou 422 | 400 Status inválido. Use: pendente, aprovada ou suspensa. | ✅ PASSOU |
-| CT-66 | Estatísticas do dashboard | 200 com totais (animais, solicitações, adotantes, ONGs) | 200, {'animaisDisponiveis': 64, 'emProcesso': 4, 'adotados': 38, 'adotantes': 88, 'ongsAprovadas': 7, 'ongsPendentes': 12, 'solicitacoesAbertas': 13} | ✅ PASSOU |
+| CT-66 | Estatísticas do dashboard | 200 com totais (animais, solicitações, adotantes, ONGs) | 200, {'animaisDisponiveis': 58, 'emProcesso': 3, 'adotados': 37, 'adotantes': 79, 'ongsAprovadas': 6, 'ongsPendentes': 9, 'solicitacoesAbertas': 13} | ✅ PASSOU |
 | CT-67 | Histórico de operações (logs) | 200, registros com data, ação, entidade e usuário | 200, 50 registros, ações: ['acompanhamento.registrado', 'animal.cadastrado', 'animal.editado', 'animal.excluido'] | ✅ PASSOU |
-| CT-68 | Logs filtrados por período e tipo | só registros de solicitação dentro do período | 200, 426 registros, entidades {'solicitacao'} | ✅ PASSOU |
+| CT-68 | Logs filtrados por período e tipo | só registros de solicitação dentro do período | 200, 385 registros, entidades {'solicitacao'} | ✅ PASSOU |
 | CT-69 | Logs com data em formato inválido | 422 | 422 | ✅ PASSOU |
 | CT-70 | Administrador remove anúncio de animal sem pedidos | 200/204 | 200 | ✅ PASSOU |
 
@@ -119,10 +119,10 @@ Comando: `python -m pytest tests -v` (dentro da pasta `backend`).
 
 | ID | Caso de teste | Resultado esperado | Resultado obtido | Situação |
 |---|---|---|---|---|
-| CT-71 | Catálogo filtrado por espécie | só gatos | 14 animais, espécies {'gato'} | ✅ PASSOU |
-| CT-72 | Catálogo filtrado por porte e sexo | só animais daquele porte e sexo | 8 animais | ✅ PASSOU |
-| CT-73 | Busca por nome no catálogo | encontra o animal pelo nome | busca 'pri': 5 resultado(s) | ✅ PASSOU |
-| CT-74 | Paginação: duas páginas seguidas não repetem animais | 5 + 5 animais diferentes | página 1 [236, 234, 235, 232, 230], página 2 [227, 225, 226, 223, 221] | ✅ PASSOU |
+| CT-71 | Catálogo filtrado por espécie | só gatos | 19 animais, espécies {'gato'} | ✅ PASSOU |
+| CT-72 | Catálogo filtrado por porte e sexo | só animais daquele porte e sexo | 10 animais | ✅ PASSOU |
+| CT-73 | Busca por nome no catálogo | encontra o animal pelo nome | busca 'pri': 4 resultado(s) | ✅ PASSOU |
+| CT-74 | Paginação: duas páginas seguidas não repetem animais | 5 + 5 animais diferentes | página 1 [105, 103, 104, 99, 101], página 2 [96, 94, 95, 90, 92] | ✅ PASSOU |
 | CT-75 | Paginação com limite acima do máximo (5000) | 422 | 422 | ✅ PASSOU |
 | CT-76 | Perfil sem permissão acessa área de outro perfil (adotante na área do admin/ONG, ONG na área do admin/adotante) | 403 | ana em /api/admin/usuarios: 403 | ✅ PASSOU |
 | CT-76 | Perfil sem permissão acessa área de outro perfil (adotante na área do admin/ONG, ONG na área do admin/adotante) | 403 | ong em /api/admin/estatisticas: 403 | ✅ PASSOU |
@@ -136,3 +136,17 @@ Comando: `python -m pytest tests -v` (dentro da pasta `backend`).
 | CT-77 | Área logada sem token | 401 | /api/favoritos: 401 | ✅ PASSOU |
 | CT-78 | ONG pendente consulta as próprias listas | 200 (consulta liberada; cadastro bloqueado no CT-31) | 200 | ✅ PASSOU |
 | CT-79 | Rota de saúde da API com o banco | 200 "conectado" | {'status': 'conectado', 'banco': 'petconnect'} | ✅ PASSOU |
+
+## IA: sugestão pela foto (RF23) e envio de fotos
+
+| ID | Caso de teste | Resultado esperado | Resultado obtido | Situação |
+|---|---|---|---|---|
+| CT-80 | ONG envia a foto de um cão | 200, espécie cão, porte grande e a sugestão gravada no banco | 200, {'valor': 'cao', 'confianca': 1.0}, raça Pastor alemão, porte grande, id 13 | ✅ PASSOU |
+| CT-81 | ONG envia a foto de um gato | 200, espécie gato e porte pequeno | 200, espécie {'valor': 'gato', 'confianca': 1.0}, raça SRD, 5.5 ms | ✅ PASSOU |
+| CT-82 | Foto que não mostra cão nem gato | 422 com a mensagem para preencher manualmente | 422 Não identificamos um cão ou gato nesta foto. Preencha os campos manualmente. | ✅ PASSOU |
+| CT-83 | Arquivo de texto enviado como foto para a IA | 400 (formato não permitido) | 400 Formato de imagem não permitido. | ✅ PASSOU |
+| CT-84 | Adotante tenta usar a sugestão pela foto | 403 (só ONG) | 403 Acesso permitido apenas para ONGs. | ✅ PASSOU |
+| CT-85 | ONG aplica a sugestão; outra ONG tenta alterar o mesmo registro | 200 para a dona da sugestão e 404 para a outra ONG | dona 200 {'id': 15, 'aceita': True}, outra ONG 404 | ✅ PASSOU |
+| CT-86 | Envio de foto sem estar logado (falha encontrada na revisão da Sprint 11) | recusado (401 ou 403) e nenhum arquivo gravado | 401 Not authenticated | ✅ PASSOU |
+| CT-87 | ONG ainda não aprovada tenta enviar foto | 403 | 403 A ONG precisa estar aprovada e ativa para realizar esta operação. | ✅ PASSOU |
+| CT-88 | ONG aprovada envia foto | 200 e endereço /uploads/... do próprio servidor | 200 http://testserver/uploads/4de4e528c538465fb083f5776259efa5.jpg | ✅ PASSOU |

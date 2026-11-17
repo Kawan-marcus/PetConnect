@@ -40,8 +40,10 @@ USE petconnect;
 -- Nunca use ALL PRIVILEGES nem o root no .env do backend.
 
 -- Relatórios: usuário SOMENTE LEITURA, que enxerga apenas as views de consulta
--- (nada de senha, token ou tabela bruta). Troque a senha antes de usar.
-CREATE USER IF NOT EXISTS 'petconnect_relatorio'@'localhost' IDENTIFIED BY 'relatorio123';
+-- (nada de senha, token ou tabela bruta).
+-- A senha abaixo é só um marcador: troque antes de usar com
+--   ALTER USER 'petconnect_relatorio'@'localhost' IDENTIFIED BY 'uma_senha_forte';
+CREATE USER IF NOT EXISTS 'petconnect_relatorio'@'localhost' IDENTIFIED BY 'troque_esta_senha';
 GRANT SELECT ON petconnect.vw_rel_solicitacoes    TO 'petconnect_relatorio'@'localhost';
 GRANT SELECT ON petconnect.vw_rel_adocoes         TO 'petconnect_relatorio'@'localhost';
 GRANT SELECT ON petconnect.vw_rel_desempenho_ong  TO 'petconnect_relatorio'@'localhost';

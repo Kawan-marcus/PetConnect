@@ -23,7 +23,7 @@ from app.routes.recuperacao import router as recuperacao_router
 
 app = FastAPI(
     title="PetConnect API",
-    version="1.0.0-rc"
+    version="1.0.0"
 )
 
 
@@ -86,7 +86,7 @@ app.include_router(recuperacao_router)
 # ROTA INICIAL
 # =========================================================
 
-@app.get("/api")
+@app.get("/api", tags=["Sistema"])
 def inicio():
     return {
         "mensagem": "Backend do PetConnect funcionando!"
@@ -97,7 +97,7 @@ def inicio():
 # TESTE DE CONEXÃO COM O BANCO
 # =========================================================
 
-@app.get("/api/health/db")
+@app.get("/api/health/db", tags=["Sistema"])
 def verificar_banco():
     banco = testar_conexao()
 

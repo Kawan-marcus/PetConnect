@@ -105,7 +105,7 @@ def salvar_amostras(adotantes, animais, rotulos):
     from sqlalchemy import text
     from app.database import engine
     colunas = COLUNAS_ADOTANTE + COLUNAS_ANIMAL + ("rotulo",)
-    linhas = [dict(zip(colunas, map(int, list(a) + list(b) + [r]))) for a, b, r in zip(adotantes, animais, rotulos)]
+    linhas = [dict(zip(colunas, map(int, list(a) + list(b) + [r]), strict=True)) for a, b, r in zip(adotantes, animais, rotulos, strict=True)]
     with engine.begin() as conexao:
         conexao.execute(text("DELETE FROM amostra_treino WHERE origem = 'sintetico'"))
         conexao.execute(
@@ -237,7 +237,7 @@ def main():
     for nome, valor in metricas.items():
         print(f"  {nome:18} {valor}")
     print("Importância aprendida de cada fator:")
-    for (chave, nome), imp in zip(FATORES, modelo_json["importancia"]):
+    for (_chave, nome), imp in zip(FATORES, modelo_json["importancia"], strict=True):
         print(f"  {nome:38} {imp:.0%}")
 
     if args.registrar and usar_banco:

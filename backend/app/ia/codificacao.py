@@ -88,9 +88,9 @@ def codificar_animal(linha):
 
 def matriz_adotantes(linhas):
     """Lista de linhas -> matriz float32 (m × 9), pronta para NumPy/OpenCL."""
-    return np.array([codificar_adotante(l) for l in linhas], dtype=np.float32).reshape(-1, len(COLUNAS_ADOTANTE))
+    return np.array([codificar_adotante(linha) for linha in linhas], dtype=np.float32).reshape(-1, len(COLUNAS_ADOTANTE))
 
 
 def matriz_animais(linhas):
     """Lista de linhas -> matriz float32 (n × 6), pronta para NumPy/OpenCL."""
-    return np.array([codificar_animal(l) for l in linhas], dtype=np.float32).reshape(-1, len(COLUNAS_ANIMAL))
+    return np.array([codificar_animal(linha) for linha in linhas], dtype=np.float32).reshape(-1, len(COLUNAS_ANIMAL))

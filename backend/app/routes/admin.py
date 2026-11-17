@@ -627,15 +627,15 @@ def listar_logs(
 
     return [
         {
-            "id": l["id"],
-            "criadoEm": iso(l["criado_em"]),
-            "acao": l["acao"],
-            "entidade": l["entidade"],
-            "entidadeId": l["entidade_id"],
-            "detalhes": detalhes(l["detalhes"]),
-            "origem": l["origem"],
-            "ip": l["ip"],
-            "usuario": {"id": l["u_id"], "nome": l["u_nome"], "perfil": l["u_perfil"]} if l["u_id"] else None,
+            "id": log["id"],
+            "criadoEm": iso(log["criado_em"]),
+            "acao": log["acao"],
+            "entidade": log["entidade"],
+            "entidadeId": log["entidade_id"],
+            "detalhes": detalhes(log["detalhes"]),
+            "origem": log["origem"],
+            "ip": log["ip"],
+            "usuario": {"id": log["u_id"], "nome": log["u_nome"], "perfil": log["u_perfil"]} if log["u_id"] else None,
         }
-        for l in linhas
+        for log in linhas
     ]

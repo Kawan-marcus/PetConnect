@@ -1,42 +1,45 @@
 ---
-title: PetConnect — Arquitetura do sistema
+title: PetConnect — Arquitetura do sistema (versão 1.0.0)
 ---
 flowchart LR
     subgraph CLIENTE["Navegador do usuário"]
         direction TB
-        UI["Front-end React 19 (Vite)<br/>telas por perfil: adotante · ONG · admin"]
+        UI["Front-end React 19 (Vite)<br/>telas por perfil: visitante · adotante · ONG · admin"]
         CTX["AuthContext + RotaProtegida<br/>(token JWT, controle de perfil)"]
         APIJS["Camada src/api (Axios)<br/>modo real ou simulado (VITE_USE_MOCK)"]
         UI --> CTX --> APIJS
     end
 
-    subgraph SERVIDOR["Backend Python — FastAPI (porta 8000)"]
+    subgraph SERVIDOR["Back-end Python — FastAPI (porta 8000)"]
         direction TB
-        ROTAS["Rotas /api<br/>auth · animais · ong · solicitações · favoritos<br/>formulário · acompanhamentos · notificações · admin"]
-        SEG["security.py<br/>bcrypt + JWT"]
-        RN["Regras de negócio<br/>RN01–RN05 · histórico · notificações"]
-        IA["Componente avançado (ia.py)<br/>compatibilidade e recomendações"]
-        OCL["Processamento paralelo<br/>PyOpenCL (GPU) — cálculo em lote"]
+        ROTAS["Rotas /api (50)<br/>auth · animais · ong · solicitações · favoritos · formulário<br/>acompanhamentos · notificações · admin · uploads · ia"]
+        SEG["security.py<br/>bcrypt + JWT + conta ativa"]
+        RN["Regras de negócio<br/>RN01–RN09 · histórico · notificações · logs"]
+        subgraph IAMOD["Componente avançado — app/ia"]
+            direction TB
+            COMP["Compatibilidade<br/>regressão logística (scikit-learn)"]
+            OCL["Cálculo em lote<br/>PyOpenCL (GPU/CPU) ou NumPy"]
+            VIS["Visão computacional (RF23)<br/>MobileNetV2 ONNX Runtime"]
+            COMP --> OCL
+        end
         UPL["uploads/ (fotos)"]
         ROTAS --> SEG
         ROTAS --> RN
-        ROTAS --> IA
-        IA -.-> OCL
+        ROTAS --> COMP
+        ROTAS --> VIS
         ROTAS --> UPL
     end
 
     subgraph DADOS["MySQL 8 — banco petconnect"]
         direction TB
-        TAB["14 tabelas<br/>usuário · ONG · animal · solicitação · histórico …"]
-        VIEW["views do dashboard"]
-        IATAB["tabelas da IA<br/>analise_compatibilidade · medicao_desempenho"]
+        TAB["17 tabelas<br/>usuário · ONG · animal · solicitação · histórico …"]
+        VIEW["23 views · 15 triggers · 6 procedures"]
+        IATAB["tabelas da IA<br/>analise_compatibilidade · modelo_ia<br/>classificacao_imagem · medicao_desempenho"]
     end
 
     APIJS -- "HTTP/JSON + Bearer JWT<br/>(proxy do Vite: /api → :8000)" --> ROTAS
     RN -- "SQLAlchemy + PyMySQL" --> TAB
     ROTAS --> VIEW
-    IA --> IATAB
-    OCL -.-> IATAB
-
-    classDef planejado stroke-dasharray: 5 5
-    class OCL planejado
+    COMP --> IATAB
+    VIS --> IATAB
+    OCL --> IATAB

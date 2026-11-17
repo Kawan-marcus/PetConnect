@@ -1,7 +1,7 @@
 {
   "name": "petconnect-front",
   "private": true,
-  "version": "1.0.0-rc",
+  "version": "1.0.0",
   "type": "module",
   "description": "Front-end do PetConnect, plataforma de adoção responsável (Fábrica de Software 2026.2)",
   "scripts": {

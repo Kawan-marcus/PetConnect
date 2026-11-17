@@ -1,0 +1,45 @@
++----------------------+------------+
+| objeto               | quantidade |
++----------------------+------------+
+| Tabelas              | 17         |
+| Views                | 23         |
+| Chaves estrangeiras  | 19         |
+| Triggers             | 15         |
+| Procedures e funções | 6          |
++----------------------+------------+
+
++------------------------------------------------------------------+-----------+----------+
+| verificacao                                                      | problemas | situacao |
++------------------------------------------------------------------+-----------+----------+
+| RN02: animal com mais de um pedido vencedor (aprovada/concluída) | 0         | OK       |
+| RN06: animal "adotado" sem adoção concluída                      | 0         | OK       |
+| RN06: adoção concluída com animal que não está "adotado"         | 0         | OK       |
+| RN06: animal "em processo" sem pedido aprovado                   | 0         | OK       |
+| RN02: pedido aberto em animal que já tem vencedor                | 0         | OK       |
+| RN08: pedido em aberto de animal excluído                        | 0         | OK       |
+| RN07: recusa sem motivo                                          | 0         | OK       |
+| Histórico: solicitação sem nenhuma etapa registrada              | 0         | OK       |
+| RN03: solicitação de adotante sem formulário                     | 0         | OK       |
+| Perfis: conta de ONG sem ONG ligada                              | 0         | OK       |
+| Perfis: adotante ou admin ligado a uma ONG                       | 0         | OK       |
+| RN04: animal de ONG não aprovada aparecendo no catálogo          | 0         | OK       |
+| Acompanhamento de adoção que não foi concluída                   | 0         | OK       |
+| Animal sem foto                                                  | 0         | OK       |
++------------------------------------------------------------------+-----------+----------+
+
++-----------------------+-----------+
+| tabela                | registros |
++-----------------------+-----------+
+| usuario               | 47        |
+| ong                   | 3         |
+| animal                | 72        |
+| foto_animal           | 96        |
+| formulario_avaliacao  | 42        |
+| solicitacao           | 110       |
+| historico_solicitacao | 292       |
+| acompanhamento        | 52        |
+| favorito              | 2         |
+| notificacao           | 4         |
+| log_acao              | 538       |
++-----------------------+-----------+
+

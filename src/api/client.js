@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 /** true = usa o mock do navegador; false = chama o backend Python. */
-export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? 'true') === 'true';
+export const USE_MOCK = String(import.meta.env.VITE_USE_MOCK ?? 'false') === 'true';
 
 const TOKEN_KEY = 'adotapet.token';
 
