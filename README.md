@@ -8,15 +8,15 @@ O PetConnect conecta cães e gatos resgatados por ONGs a adotantes compatíveis.
 
 ## Equipe
 
-**Grupo [Nº]**
+**Grupo Nº 27**
 
 | Integrante | Papel |
 |---|---|
-| Kawan Marcus | Front-end, banco de dados e documentação |
-| Ecliton Matheus | Back-end (API) |
-| [Nome] | [Papel] |
-| [Nome] | [Papel] |
-| [Nome] | [Papel] |
+| Kawan Marcus | Front-end |
+| Ecliton Matheus | Back-end |
+| Luana de Andrade | Scrum Master |
+| Nicolas Gabriel | Banco de Dados |
+| Eduardo Isaias | Back-end |
 
 ## Objetivo da solução
 
